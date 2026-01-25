@@ -2,6 +2,7 @@
 
 import { getDb } from '@/lib/db';
 import { auth } from '@/lib/auth';
+import type { InValue } from '@libsql/client';
 import { revalidatePath } from 'next/cache';
 
 export interface Recipe {
@@ -72,7 +73,7 @@ export async function getUserRecipes(userId: string, visibility?: string) {
              (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
              (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comments
              FROM recipes r WHERE r.user_id = ?`;
-  const args: (string | undefined)[] = [userId];
+  const args: string[] = [userId];
   
   if (visibility) {
     sql += ` AND r.visibility = ?`;
@@ -185,7 +186,7 @@ export async function updateRecipe(id: string, data: {
   }
   
   const updates: string[] = [];
-  const args: (string | null)[] = [];
+  const args: InValue[] = [];
   
   if (data.title !== undefined) { updates.push('title = ?'); args.push(data.title); }
   if (data.description !== undefined) { updates.push('description = ?'); args.push(data.description); }

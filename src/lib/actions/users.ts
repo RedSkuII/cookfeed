@@ -2,6 +2,7 @@
 
 import { getDb } from '@/lib/db';
 import { auth } from '@/lib/auth';
+import type { InValue } from '@libsql/client';
 import { revalidatePath } from 'next/cache';
 
 // Get user profile
@@ -50,7 +51,7 @@ export async function updateUserProfile(data: {
   const db = getDb();
   
   const updates: string[] = [];
-  const args: (string | null)[] = [];
+  const args: InValue[] = [];
   
   if (data.name !== undefined) { updates.push('name = ?'); args.push(data.name); }
   if (data.bio !== undefined) { updates.push('bio = ?'); args.push(data.bio); }
