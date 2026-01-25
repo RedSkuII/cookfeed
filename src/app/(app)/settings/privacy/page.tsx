@@ -3,28 +3,86 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface PrivacySettings {
+  profile_public: boolean;
+  show_activity: boolean;
+  allow_comments: boolean;
+  show_favorites: boolean;
+  show_followers: boolean;
+}
+
 export default function PrivacySettingsPage() {
-  const [settings, setSettings] = useState({
-    profilePublic: true,
-    showActivity: true,
-    allowComments: true,
-    showFavorites: false,
-    showFollowers: true,
+  const [settings, setSettings] = useState<PrivacySettings>({
+    profile_public: true,
+    show_activity: true,
+    allow_comments: true,
+    show_favorites: false,
+    show_followers: true,
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Load saved settings
-    const saved = localStorage.getItem("cookfeed_privacy_settings");
-    if (saved) {
-      setSettings(JSON.parse(saved));
+    // Load settings from server
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/user/preferences");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings({
+            profile_public: data.profile_public ?? true,
+            show_activity: data.show_activity ?? true,
+            allow_comments: data.allow_comments ?? true,
+            show_favorites: data.show_favorites ?? false,
+            show_followers: data.show_followers ?? true,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadSettings();
   }, []);
 
-  const updateSetting = (key: keyof typeof settings) => {
+  const updateSetting = async (key: keyof PrivacySettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
     setSettings(newSettings);
-    localStorage.setItem("cookfeed_privacy_settings", JSON.stringify(newSettings));
+    setSaving(true);
+
+    try {
+      await fetch("/api/user/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSettings),
+      });
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      // Revert on error
+      setSettings(settings);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="px-4 pt-4 pb-24">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/settings" className="w-10 h-10 flex items-center justify-center">
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Privacy</h1>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="px-4 pt-4 pb-24">
@@ -36,6 +94,9 @@ export default function PrivacySettingsPage() {
           </svg>
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Privacy</h1>
+        {saving && (
+          <span className="ml-auto text-sm text-gray-500">Saving...</span>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -49,14 +110,14 @@ export default function PrivacySettingsPage() {
                 <p className="text-sm text-gray-500">Anyone can view your profile and recipes</p>
               </div>
               <button
-                onClick={() => updateSetting("profilePublic")}
+                onClick={() => updateSetting("profile_public")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.profilePublic ? "bg-orange-500" : "bg-gray-300"
+                  settings.profile_public ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.profilePublic ? "translate-x-5" : "translate-x-0"
+                    settings.profile_public ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -68,14 +129,14 @@ export default function PrivacySettingsPage() {
                 <p className="text-sm text-gray-500">Let others see when you were last active</p>
               </div>
               <button
-                onClick={() => updateSetting("showActivity")}
+                onClick={() => updateSetting("show_activity")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.showActivity ? "bg-orange-500" : "bg-gray-300"
+                  settings.show_activity ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showActivity ? "translate-x-5" : "translate-x-0"
+                    settings.show_activity ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -93,14 +154,14 @@ export default function PrivacySettingsPage() {
                 <p className="text-sm text-gray-500">Let others comment on your recipes</p>
               </div>
               <button
-                onClick={() => updateSetting("allowComments")}
+                onClick={() => updateSetting("allow_comments")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.allowComments ? "bg-orange-500" : "bg-gray-300"
+                  settings.allow_comments ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.allowComments ? "translate-x-5" : "translate-x-0"
+                    settings.allow_comments ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -112,14 +173,14 @@ export default function PrivacySettingsPage() {
                 <p className="text-sm text-gray-500">Let others see recipes you&apos;ve favorited</p>
               </div>
               <button
-                onClick={() => updateSetting("showFavorites")}
+                onClick={() => updateSetting("show_favorites")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.showFavorites ? "bg-orange-500" : "bg-gray-300"
+                  settings.show_favorites ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showFavorites ? "translate-x-5" : "translate-x-0"
+                    settings.show_favorites ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -131,14 +192,14 @@ export default function PrivacySettingsPage() {
                 <p className="text-sm text-gray-500">Display your follower and following counts</p>
               </div>
               <button
-                onClick={() => updateSetting("showFollowers")}
+                onClick={() => updateSetting("show_followers")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.showFollowers ? "bg-orange-500" : "bg-gray-300"
+                  settings.show_followers ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showFollowers ? "translate-x-5" : "translate-x-0"
+                    settings.show_followers ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -176,7 +237,7 @@ export default function PrivacySettingsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-blue-700">
-              Your privacy settings are stored locally on your device. Changes take effect immediately.
+              Your privacy settings are synced to your account and apply across all devices.
             </p>
           </div>
         </div>

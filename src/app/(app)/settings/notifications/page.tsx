@@ -3,29 +3,89 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface NotificationSettings {
+  push_enabled: boolean;
+  notify_new_recipes: boolean;
+  notify_likes: boolean;
+  notify_comments: boolean;
+  notify_followers: boolean;
+  weekly_digest: boolean;
+}
+
 export default function NotificationsSettingsPage() {
-  const [settings, setSettings] = useState({
-    pushEnabled: false,
-    newRecipes: true,
-    likes: true,
-    comments: true,
-    followers: true,
-    weeklyDigest: false,
+  const [settings, setSettings] = useState<NotificationSettings>({
+    push_enabled: false,
+    notify_new_recipes: true,
+    notify_likes: true,
+    notify_comments: true,
+    notify_followers: true,
+    weekly_digest: false,
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    // Load saved settings
-    const saved = localStorage.getItem("cookfeed_notification_settings");
-    if (saved) {
-      setSettings(JSON.parse(saved));
+    // Load settings from server
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/user/preferences");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings({
+            push_enabled: data.push_enabled ?? false,
+            notify_new_recipes: data.notify_new_recipes ?? true,
+            notify_likes: data.notify_likes ?? true,
+            notify_comments: data.notify_comments ?? true,
+            notify_followers: data.notify_followers ?? true,
+            weekly_digest: data.weekly_digest ?? false,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      } finally {
+        setLoading(false);
+      }
     }
+    loadSettings();
   }, []);
 
-  const updateSetting = (key: keyof typeof settings) => {
+  const updateSetting = async (key: keyof NotificationSettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
     setSettings(newSettings);
-    localStorage.setItem("cookfeed_notification_settings", JSON.stringify(newSettings));
+    setSaving(true);
+
+    try {
+      await fetch("/api/user/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSettings),
+      });
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      // Revert on error
+      setSettings(settings);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="px-4 pt-4 pb-24">
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/settings" className="w-10 h-10 flex items-center justify-center">
+            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        </div>
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="px-4 pt-4 pb-24">
@@ -37,6 +97,9 @@ export default function NotificationsSettingsPage() {
           </svg>
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+        {saving && (
+          <span className="ml-auto text-sm text-gray-500">Saving...</span>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -50,14 +113,14 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm text-gray-500">Receive notifications on your device</p>
               </div>
               <button
-                onClick={() => updateSetting("pushEnabled")}
+                onClick={() => updateSetting("push_enabled")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.pushEnabled ? "bg-orange-500" : "bg-gray-300"
+                  settings.push_enabled ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.pushEnabled ? "translate-x-5" : "translate-x-0"
+                    settings.push_enabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -75,14 +138,14 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm text-gray-500">When people you follow post new recipes</p>
               </div>
               <button
-                onClick={() => updateSetting("newRecipes")}
+                onClick={() => updateSetting("notify_new_recipes")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.newRecipes ? "bg-orange-500" : "bg-gray-300"
+                  settings.notify_new_recipes ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.newRecipes ? "translate-x-5" : "translate-x-0"
+                    settings.notify_new_recipes ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -94,14 +157,14 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm text-gray-500">When someone likes your recipe</p>
               </div>
               <button
-                onClick={() => updateSetting("likes")}
+                onClick={() => updateSetting("notify_likes")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.likes ? "bg-orange-500" : "bg-gray-300"
+                  settings.notify_likes ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.likes ? "translate-x-5" : "translate-x-0"
+                    settings.notify_likes ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -113,14 +176,14 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm text-gray-500">When someone comments on your recipe</p>
               </div>
               <button
-                onClick={() => updateSetting("comments")}
+                onClick={() => updateSetting("notify_comments")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.comments ? "bg-orange-500" : "bg-gray-300"
+                  settings.notify_comments ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.comments ? "translate-x-5" : "translate-x-0"
+                    settings.notify_comments ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -132,14 +195,14 @@ export default function NotificationsSettingsPage() {
                 <p className="text-sm text-gray-500">When someone starts following you</p>
               </div>
               <button
-                onClick={() => updateSetting("followers")}
+                onClick={() => updateSetting("notify_followers")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.followers ? "bg-orange-500" : "bg-gray-300"
+                  settings.notify_followers ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.followers ? "translate-x-5" : "translate-x-0"
+                    settings.notify_followers ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -154,22 +217,27 @@ export default function NotificationsSettingsPage() {
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium text-gray-900">Weekly Digest</p>
-                <p className="text-sm text-gray-500">Get a summary of trending recipes</p>
+                <p className="text-sm text-gray-500">Get a summary of trending recipes every week</p>
               </div>
               <button
-                onClick={() => updateSetting("weeklyDigest")}
+                onClick={() => updateSetting("weekly_digest")}
                 className={`relative w-12 h-7 rounded-full transition-colors ${
-                  settings.weeklyDigest ? "bg-orange-500" : "bg-gray-300"
+                  settings.weekly_digest ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.weeklyDigest ? "translate-x-5" : "translate-x-0"
+                    settings.weekly_digest ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
             </div>
           </div>
+          {settings.weekly_digest && (
+            <p className="mt-2 text-sm text-green-600 px-1">
+              ✓ You&apos;ll receive weekly recipe digests at your email
+            </p>
+          )}
         </div>
       </div>
     </main>

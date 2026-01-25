@@ -140,6 +140,24 @@ export const schema = `
     UNIQUE(user_id, name)
   );
 
+  -- User preferences table (for email and notification settings)
+  CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id TEXT PRIMARY KEY,
+    weekly_digest INTEGER DEFAULT 0,
+    push_enabled INTEGER DEFAULT 0,
+    notify_new_recipes INTEGER DEFAULT 1,
+    notify_likes INTEGER DEFAULT 1,
+    notify_comments INTEGER DEFAULT 1,
+    notify_followers INTEGER DEFAULT 1,
+    profile_public INTEGER DEFAULT 1,
+    show_activity INTEGER DEFAULT 1,
+    allow_comments INTEGER DEFAULT 1,
+    show_favorites INTEGER DEFAULT 0,
+    show_followers INTEGER DEFAULT 1,
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   -- Indexes for performance
   CREATE INDEX IF NOT EXISTS idx_recipes_user_id ON recipes(user_id);
   CREATE INDEX IF NOT EXISTS idx_recipes_visibility ON recipes(visibility);
