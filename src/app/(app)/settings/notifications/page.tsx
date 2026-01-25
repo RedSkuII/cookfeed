@@ -56,8 +56,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.pushEnabled ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.pushEnabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -81,8 +81,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.newRecipes ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.newRecipes ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -100,8 +100,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.likes ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.likes ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -119,8 +119,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.comments ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.comments ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -138,8 +138,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.followers ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.followers ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -163,8 +163,8 @@ export default function NotificationsSettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.weeklyDigest ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.weeklyDigest ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>

@@ -55,8 +55,8 @@ export default function PrivacySettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.profilePublic ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.profilePublic ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -74,8 +74,8 @@ export default function PrivacySettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showActivity ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.showActivity ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -99,8 +99,8 @@ export default function PrivacySettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.allowComments ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.allowComments ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -118,8 +118,8 @@ export default function PrivacySettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showFavorites ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.showFavorites ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -137,8 +137,8 @@ export default function PrivacySettingsPage() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                    settings.showFollowers ? "translate-x-5" : "translate-x-0.5"
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.showFollowers ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
