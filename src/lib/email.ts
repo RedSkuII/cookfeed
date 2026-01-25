@@ -7,6 +7,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // For now, use their default onboarding email
 const FROM_EMAIL = process.env.FROM_EMAIL || "CookFeed <onboarding@resend.dev>";
 
+const BASE_URL = "https://cookfeed.vercel.app";
+
 interface Recipe {
   id: string;
   title: string;
@@ -25,10 +27,13 @@ export async function sendWeeklyDigest(
     .map(
       (recipe) => `
         <div style="margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 24px;">
-          ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.title}" style="width: 100%; max-width: 400px; border-radius: 12px; margin-bottom: 12px;">` : ""}
-          <h3 style="margin: 0 0 8px; color: #333; font-size: 18px;">${recipe.title}</h3>
-          <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${recipe.description || "A delicious recipe"}</p>
-          <p style="margin: 0; color: #888; font-size: 12px;">By ${recipe.author || "Anonymous"} • ${recipe.likes} likes</p>
+          <a href="${BASE_URL}/recipe/${recipe.id}" style="text-decoration: none; color: inherit; display: block;">
+            ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.title}" style="width: 100%; max-width: 400px; border-radius: 12px; margin-bottom: 12px;">` : `<div style="width: 100%; max-width: 400px; height: 200px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 48px;">🍳</span></div>`}
+            <h3 style="margin: 0 0 8px; color: #333; font-size: 18px;">${recipe.title}</h3>
+            <p style="margin: 0 0 8px; color: #666; font-size: 14px;">${recipe.description || "A delicious recipe waiting for you!"}</p>
+            <p style="margin: 0 0 12px; color: #888; font-size: 12px;">By ${recipe.author || "Anonymous"} • ❤️ ${recipe.likes} likes</p>
+            <span style="display: inline-block; background: #f97316; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; font-size: 14px;">View Recipe →</span>
+          </a>
         </div>
       `
     )
@@ -61,7 +66,7 @@ export async function sendWeeklyDigest(
             ${recipeListHtml || "<p style='color: #666;'>No trending recipes this week. Be the first to share one!</p>"}
             
             <div style="margin-top: 32px; text-align: center;">
-              <a href="https://cookfeed.vercel.app/feed" style="display: inline-block; background: #f97316; color: white; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+              <a href="${BASE_URL}/feed" style="display: inline-block; background: #f97316; color: white; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Explore More Recipes
               </a>
             </div>
@@ -73,7 +78,7 @@ export async function sendWeeklyDigest(
               You're receiving this because you subscribed to CookFeed's weekly digest.
             </p>
             <p style="margin: 0; color: #888; font-size: 12px;">
-              <a href="https://cookfeed.vercel.app/settings/notifications" style="color: #f97316;">Unsubscribe</a> from these emails.
+              <a href="${BASE_URL}/settings/notifications" style="color: #f97316;">Unsubscribe</a> from these emails.
             </p>
           </div>
         </div>
