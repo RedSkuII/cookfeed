@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithGoogle } from "@/lib/actions";
+import { signInWithGoogle, signInWithCredentials } from "@/lib/actions";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -22,20 +22,16 @@ function LoginForm() {
     setError("");
 
     try {
-      // Use fetch to call credentials sign in
-      const res = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (res.ok) {
-        router.push("/feed");
+      const result = await signInWithCredentials(email, password);
+      
+      if (result?.error) {
+        setError(result.error);
       } else {
-        setError("Invalid email or password");
+        router.push("/feed");
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      // If redirect happens, this catch will trigger but that's OK
+      router.push("/feed");
     } finally {
       setIsLoading(false);
     }

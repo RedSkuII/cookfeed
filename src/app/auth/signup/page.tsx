@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithGoogle } from "@/lib/actions";
+import { signInWithGoogle, signInWithCredentials } from "@/lib/actions";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -19,9 +19,29 @@ export default function SignUpPage() {
     setError("");
 
     try {
-      // TODO: Create user in database first, then sign in
-      // For now just redirect to feed
-      router.push("/feed");
+      // Register user first
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to create account");
+        setIsLoading(false);
+        return;
+      }
+
+      // Sign in with the new credentials
+      const result = await signInWithCredentials(email, password);
+      
+      if (result?.error) {
+        setError("Account created but failed to sign in. Please try logging in.");
+      } else {
+        router.push("/feed");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {

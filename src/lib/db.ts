@@ -51,6 +51,7 @@ export const schema = `
     name TEXT,
     bio TEXT,
     profile_image TEXT,
+    password_hash TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
   );

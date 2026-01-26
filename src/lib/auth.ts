@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { getDb } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 // Helper to create or update user in database
 async function upsertUser(user: { id: string; email: string; name?: string | null; image?: string | null }) {
@@ -64,22 +65,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (credentials?.email && credentials?.password) {
-          // Look up user in database
           try {
             const db = getDb();
             const result = await db.execute({
-              sql: "SELECT id, email, name FROM users WHERE email = ?",
+              sql: "SELECT id, email, name, password_hash FROM users WHERE email = ?",
               args: [credentials.email as string],
             });
             
             if (result.rows.length > 0) {
               const user = result.rows[0];
-              // Note: In production, you should verify password hash here
-              return {
-                id: user.id as string,
-                email: user.email as string,
-                name: user.name as string | null,
-              };
+              const passwordHash = user.password_hash as string | null;
+              
+              // If user has no password (Google-only account), reject
+              if (!passwordHash) {
+                return null;
+              }
+              
+              // Verify password
+              const isValid = await bcrypt.compare(
+                credentials.password as string,
+                passwordHash
+              );
+              
+              if (isValid) {
+                return {
+                  id: user.id as string,
+                  email: user.email as string,
+                  name: user.name as string | null,
+                };
+              }
             }
           } catch (error) {
             console.error("Database lookup failed:", error);

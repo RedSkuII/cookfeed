@@ -13,6 +13,8 @@ export async function GET() {
       `ALTER TABLE user_preferences ADD COLUMN last_active TEXT DEFAULT (datetime('now'))`,
       // Add is_public column to collections
       `ALTER TABLE collections ADD COLUMN is_public INTEGER DEFAULT 1`,
+      // Add password_hash column to users for email/password auth
+      `ALTER TABLE users ADD COLUMN password_hash TEXT`,
     ];
 
     const results: { migration: string; status: string }[] = [];
