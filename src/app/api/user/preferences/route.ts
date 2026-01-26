@@ -18,17 +18,18 @@ export async function GET() {
     if (result.rows.length === 0) {
       // Return default preferences
       return NextResponse.json({
-        weekly_digest: false,
-        push_enabled: false,
+        weekly_digest: true,
+        push_enabled: true,
         notify_new_recipes: true,
         notify_likes: true,
         notify_comments: true,
         notify_followers: true,
         profile_public: true,
-        show_activity: true,
+        show_activity: false,
         allow_comments: true,
         show_favorites: false,
         show_followers: true,
+        show_email: false,
       });
     }
 
@@ -45,6 +46,7 @@ export async function GET() {
       allow_comments: Boolean(prefs.allow_comments),
       show_favorites: Boolean(prefs.show_favorites),
       show_followers: Boolean(prefs.show_followers),
+      show_email: Boolean(prefs.show_email),
     });
   } catch (error) {
     console.error("Failed to get preferences:", error);
@@ -72,8 +74,8 @@ export async function POST(request: Request) {
           user_id, weekly_digest, push_enabled, notify_new_recipes,
           notify_likes, notify_comments, notify_followers,
           profile_public, show_activity, allow_comments,
-          show_favorites, show_followers, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+          show_favorites, show_followers, show_email, last_active, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         ON CONFLICT(user_id) DO UPDATE SET
           weekly_digest = excluded.weekly_digest,
           push_enabled = excluded.push_enabled,
@@ -86,6 +88,8 @@ export async function POST(request: Request) {
           allow_comments = excluded.allow_comments,
           show_favorites = excluded.show_favorites,
           show_followers = excluded.show_followers,
+          show_email = excluded.show_email,
+          last_active = datetime('now'),
           updated_at = datetime('now')
       `,
       args: [
@@ -101,6 +105,7 @@ export async function POST(request: Request) {
         preferences.allow_comments ? 1 : 0,
         preferences.show_favorites ? 1 : 0,
         preferences.show_followers ? 1 : 0,
+        preferences.show_email ? 1 : 0,
       ],
     });
 

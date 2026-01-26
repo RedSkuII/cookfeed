@@ -9,15 +9,17 @@ interface PrivacySettings {
   allow_comments: boolean;
   show_favorites: boolean;
   show_followers: boolean;
+  show_email: boolean;
 }
 
 export default function PrivacySettingsPage() {
   const [settings, setSettings] = useState<PrivacySettings>({
     profile_public: true,
-    show_activity: true,
+    show_activity: false,
     allow_comments: true,
     show_favorites: false,
     show_followers: true,
+    show_email: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,10 +33,11 @@ export default function PrivacySettingsPage() {
           const data = await res.json();
           setSettings({
             profile_public: data.profile_public ?? true,
-            show_activity: data.show_activity ?? true,
+            show_activity: data.show_activity ?? false,
             allow_comments: data.allow_comments ?? true,
             show_favorites: data.show_favorites ?? false,
             show_followers: data.show_followers ?? true,
+            show_email: data.show_email ?? false,
           });
         }
       } catch (error) {
@@ -107,7 +110,7 @@ export default function PrivacySettingsPage() {
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium text-gray-900">Public Profile</p>
-                <p className="text-sm text-gray-500">Anyone can view your profile and recipes</p>
+                <p className="text-sm text-gray-500">Anyone can view your profile and public recipes. When off, only you can see your profile.</p>
               </div>
               <button
                 onClick={() => updateSetting("profile_public")}
@@ -126,7 +129,7 @@ export default function PrivacySettingsPage() {
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium text-gray-900">Show Activity Status</p>
-                <p className="text-sm text-gray-500">Let others see when you were last active</p>
+                <p className="text-sm text-gray-500">Let others see when you were last active on your profile</p>
               </div>
               <button
                 onClick={() => updateSetting("show_activity")}
@@ -137,6 +140,25 @@ export default function PrivacySettingsPage() {
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
                     settings.show_activity ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between p-4">
+              <div>
+                <p className="font-medium text-gray-900">Show Email Address</p>
+                <p className="text-sm text-gray-500">Display your email on your public profile</p>
+              </div>
+              <button
+                onClick={() => updateSetting("show_email")}
+                className={`relative w-12 h-7 rounded-full transition-colors ${
+                  settings.show_email ? "bg-orange-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.show_email ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
@@ -170,7 +192,7 @@ export default function PrivacySettingsPage() {
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium text-gray-900">Show Favorites</p>
-                <p className="text-sm text-gray-500">Let others see recipes you&apos;ve favorited</p>
+                <p className="text-sm text-gray-500">Let others see your public saved collections. You can also set individual collections as private.</p>
               </div>
               <button
                 onClick={() => updateSetting("show_favorites")}
@@ -189,7 +211,7 @@ export default function PrivacySettingsPage() {
             <div className="flex items-center justify-between p-4">
               <div>
                 <p className="font-medium text-gray-900">Show Followers</p>
-                <p className="text-sm text-gray-500">Display your follower and following counts</p>
+                <p className="text-sm text-gray-500">Display your follower and following counts on your profile</p>
               </div>
               <button
                 onClick={() => updateSetting("show_followers")}

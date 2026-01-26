@@ -14,12 +14,12 @@ interface NotificationSettings {
 
 export default function NotificationsSettingsPage() {
   const [settings, setSettings] = useState<NotificationSettings>({
-    push_enabled: false,
+    push_enabled: true,
     notify_new_recipes: true,
     notify_likes: true,
     notify_comments: true,
     notify_followers: true,
-    weekly_digest: false,
+    weekly_digest: true,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,12 +32,12 @@ export default function NotificationsSettingsPage() {
         if (res.ok) {
           const data = await res.json();
           setSettings({
-            push_enabled: data.push_enabled ?? false,
+            push_enabled: data.push_enabled ?? true,
             notify_new_recipes: data.notify_new_recipes ?? true,
             notify_likes: data.notify_likes ?? true,
             notify_comments: data.notify_comments ?? true,
             notify_followers: data.notify_followers ?? true,
-            weekly_digest: data.weekly_digest ?? false,
+            weekly_digest: data.weekly_digest ?? true,
           });
         }
       } catch (error) {

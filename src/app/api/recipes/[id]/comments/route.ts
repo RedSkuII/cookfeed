@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 
 // POST - Add a comment to a recipe
@@ -9,8 +8,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -23,10 +22,29 @@ export async function POST(
 
     const db = getDb();
 
-    // Get user
+    // Check if recipe owner allows comments
+    const recipeResult = await db.execute({
+      sql: `SELECT r.user_id, p.allow_comments 
+            FROM recipes r 
+            LEFT JOIN user_preferences p ON r.user_id = p.user_id 
+            WHERE r.id = ?`,
+      args: [recipeId],
+    });
+
+    if (recipeResult.rows.length === 0) {
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+    }
+
+    // Default to allowing comments if no preference set
+    const allowComments = recipeResult.rows[0].allow_comments !== 0;
+    if (!allowComments) {
+      return NextResponse.json({ error: "Comments are disabled for this recipe" }, { status: 403 });
+    }
+
+    // Get user info for comment
     const userResult = await db.execute({
-      sql: "SELECT id, name, image FROM users WHERE email = ?",
-      args: [session.user.email],
+      sql: "SELECT id, name, profile_image FROM users WHERE id = ?",
+      args: [session.user.id],
     });
 
     if (userResult.rows.length === 0) {
@@ -40,12 +58,12 @@ export async function POST(
     await db.execute({
       sql: `INSERT INTO comments (id, recipe_id, user_id, content, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))`,
-      args: [commentId, recipeId, user.id, content.trim()],
+      args: [commentId, recipeId, session.user.id, content.trim()],
     });
 
     // Get the created comment
     const result = await db.execute({
-      sql: `SELECT c.id, c.content, c.created_at, u.name as user_name, u.image as user_image
+      sql: `SELECT c.id, c.content, c.created_at, u.name as user_name, u.profile_image as user_image
             FROM comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.id = ?`,
@@ -79,8 +97,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -94,22 +112,10 @@ export async function DELETE(
 
     const db = getDb();
 
-    // Get user
-    const userResult = await db.execute({
-      sql: "SELECT id FROM users WHERE email = ?",
-      args: [session.user.email],
-    });
-
-    if (userResult.rows.length === 0) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userId = userResult.rows[0].id;
-
     // Delete comment (only if user owns it)
     await db.execute({
       sql: "DELETE FROM comments WHERE id = ? AND recipe_id = ? AND user_id = ?",
-      args: [commentId, recipeId, userId],
+      args: [commentId, recipeId, session.user.id],
     });
 
     return NextResponse.json({ success: true });

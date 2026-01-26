@@ -135,6 +135,7 @@ export const schema = `
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     name TEXT NOT NULL,
+    is_public INTEGER DEFAULT 1,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE(user_id, name)
@@ -143,17 +144,19 @@ export const schema = `
   -- User preferences table (for email and notification settings)
   CREATE TABLE IF NOT EXISTS user_preferences (
     user_id TEXT PRIMARY KEY,
-    weekly_digest INTEGER DEFAULT 0,
-    push_enabled INTEGER DEFAULT 0,
+    weekly_digest INTEGER DEFAULT 1,
+    push_enabled INTEGER DEFAULT 1,
     notify_new_recipes INTEGER DEFAULT 1,
     notify_likes INTEGER DEFAULT 1,
     notify_comments INTEGER DEFAULT 1,
     notify_followers INTEGER DEFAULT 1,
     profile_public INTEGER DEFAULT 1,
-    show_activity INTEGER DEFAULT 1,
+    show_activity INTEGER DEFAULT 0,
     allow_comments INTEGER DEFAULT 1,
     show_favorites INTEGER DEFAULT 0,
     show_followers INTEGER DEFAULT 1,
+    show_email INTEGER DEFAULT 0,
+    last_active TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );

@@ -15,9 +15,11 @@ export async function GET(
     const result = await db.execute({
       sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
             (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
-            (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count
+            (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count,
+            p.allow_comments
             FROM recipes r
             LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN user_preferences p ON r.user_id = p.user_id
             WHERE r.id = ?`,
       args: [id],
     });
@@ -26,10 +28,14 @@ export async function GET(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
+    const row = result.rows[0];
     const recipe = {
-      ...result.rows[0],
-      tags: JSON.parse((result.rows[0].tags as string) || "[]"),
+      ...row,
+      tags: JSON.parse((row.tags as string) || "[]"),
     };
+
+    // Default to allowing comments if no preference set
+    const allowComments = row.allow_comments !== 0;
 
     // Check if current user has liked this recipe
     let hasLiked = false;
@@ -71,6 +77,7 @@ export async function GET(
       hasLiked,
       hasMade,
       isFavorited,
+      allowComments,
       comments: commentsResult.rows,
     });
   } catch (error) {

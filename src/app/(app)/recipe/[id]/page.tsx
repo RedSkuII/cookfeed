@@ -62,6 +62,7 @@ export default function RecipeDetailPage({
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [collections, setCollections] = useState<string[]>([]);
   const [currentCollection, setCurrentCollection] = useState<string | null>(null);
+  const [allowComments, setAllowComments] = useState(true);
 
   useEffect(() => {
     // Load recipe from database
@@ -76,6 +77,7 @@ export default function RecipeDetailPage({
           setMadeThis(data.hasMade || false);
           setIsFavorited(data.isFavorited || false);
           setComments(data.comments || []);
+          setAllowComments(data.allowComments !== false);
         }
       } catch (error) {
         console.error("Failed to load recipe:", error);
@@ -84,10 +86,22 @@ export default function RecipeDetailPage({
       }
     }
     
-    // Load collections from localStorage (still local for now)
-    const storedCollections = JSON.parse(localStorage.getItem("cookfeed_collections") || '["All Saved", "Favorites", "To Try", "Weeknight", "Special Occasions"]');
-    setCollections(storedCollections.filter((c: string) => c !== "All Saved"));
+    // Load collections from API
+    async function loadCollections() {
+      try {
+        const res = await fetch("/api/collections");
+        if (res.ok) {
+          const data = await res.json();
+          const collNames = ["Favorites", ...(data.collections || []).filter((c: {name: string}) => c.name !== "Favorites").map((c: {name: string}) => c.name)];
+          setCollections(collNames);
+        }
+      } catch {
+        setCollections(["Favorites"]);
+      }
+    }
     
+    loadRecipe();
+    loadCollections();
     loadRecipe();
   }, [id]);
 
@@ -503,28 +517,34 @@ export default function RecipeDetailPage({
         <div id="comments-section" className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Comments ({comments.length})</h2>
           
-          {/* Add Comment */}
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
-            />
-            <button
-              onClick={handleAddComment}
-              disabled={!newComment.trim()}
-              className="px-4 py-2 bg-primary-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Post
-            </button>
-          </div>
+          {/* Add Comment - only show if comments are allowed */}
+          {allowComments ? (
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+              />
+              <button
+                onClick={handleAddComment}
+                disabled={!newComment.trim()}
+                className="px-4 py-2 bg-primary-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Post
+              </button>
+            </div>
+          ) : (
+            <div className="mb-4 p-3 bg-gray-100 rounded-xl text-center">
+              <p className="text-gray-500">Comments are disabled for this recipe</p>
+            </div>
+          )}
           
           {/* Comments List */}
           {comments.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No comments yet. Be the first to comment!</p>
+            <p className="text-gray-500 text-center py-4">{allowComments ? "No comments yet. Be the first to comment!" : "No comments"}</p>
           ) : (
             <div className="space-y-3">
               {comments.map((comment) => (
