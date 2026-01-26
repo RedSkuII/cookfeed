@@ -6,18 +6,40 @@ import { useRouter } from "next/navigation";
 
 type Recipe = {
   id: string;
+  user_id: string;
   title: string;
   description?: string;
   image?: string;
-  ingredients: string[];
-  steps: string[];
+  ingredients: string;
+  instructions: string;
   tags: string[];
-  isPublic: boolean;
+  visibility: string;
   likes: number;
-  comments: number;
-  author: { name: string };
-  createdAt: string;
+  comment_count?: number;
+  author: string;
+  author_image?: string;
+  created_at: string;
 };
+
+type Comment = {
+  id: string;
+  user_name: string;
+  user_image?: string;
+  content: string;
+  created_at: string;
+};
+
+// Helper to parse ingredients/instructions which could be JSON array or newline-separated string
+function parseList(data: string): string[] {
+  if (!data) return [];
+  try {
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch {
+    // Not JSON, treat as newline-separated
+  }
+  return data.split("\n").filter(Boolean);
+}
 
 export default function RecipeDetailPage({
   params,
@@ -34,7 +56,7 @@ export default function RecipeDetailPage({
   const [showMenu, setShowMenu] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
   const [madeThis, setMadeThis] = useState(false);
-  const [comments, setComments] = useState<{ id: string; author: string; text: string; date: string }[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [showMadeToast, setShowMadeToast] = useState(false);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
@@ -42,71 +64,51 @@ export default function RecipeDetailPage({
   const [currentCollection, setCurrentCollection] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load recipes from localStorage and find the one with matching id
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    const found = storedRecipes.find((r: Recipe) => r.id === id);
-    setRecipe(found || null);
-    
-    if (found) {
-      setLikeCount(found.likes || 0);
-      
-      // Check if user has liked this recipe
-      const likedRecipes = JSON.parse(localStorage.getItem("cookfeed_liked") || "[]");
-      setIsLiked(likedRecipes.includes(id));
+    // Load recipe from database
+    async function loadRecipe() {
+      try {
+        const res = await fetch(`/api/recipes/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setRecipe(data.recipe);
+          setLikeCount(Number(data.recipe?.likes) || 0);
+          setIsLiked(data.hasLiked || false);
+          setMadeThis(data.hasMade || false);
+          setIsFavorited(data.isFavorited || false);
+          setComments(data.comments || []);
+        }
+      } catch (error) {
+        console.error("Failed to load recipe:", error);
+      } finally {
+        setLoading(false);
+      }
     }
     
-    // Check if this recipe is favorited
-    const favorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-    const favEntry = favorites.find((f: { id: string; collection?: string }) => f.id === id);
-    setIsFavorited(!!favEntry);
-    if (favEntry?.collection) {
-      setCurrentCollection(favEntry.collection);
-    }
-    
-    // Load collections
+    // Load collections from localStorage (still local for now)
     const storedCollections = JSON.parse(localStorage.getItem("cookfeed_collections") || '["All Saved", "Favorites", "To Try", "Weeknight", "Special Occasions"]');
     setCollections(storedCollections.filter((c: string) => c !== "All Saved"));
     
-    // Check if user has made this recipe
-    const madeRecipes = JSON.parse(localStorage.getItem("cookfeed_made") || "[]");
-    setMadeThis(madeRecipes.includes(id));
-    
-    // Load comments for this recipe
-    const allComments = JSON.parse(localStorage.getItem("cookfeed_comments") || "{}");
-    setComments(allComments[id] || []);
-    
-    setLoading(false);
+    loadRecipe();
   }, [id]);
 
-  const toggleLike = () => {
+  const toggleLike = async () => {
     if (!recipe) return;
     
-    const likedRecipes = JSON.parse(localStorage.getItem("cookfeed_liked") || "[]");
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    
-    let newLikeCount: number;
-    
-    if (isLiked) {
-      // Unlike
-      const updatedLiked = likedRecipes.filter((lid: string) => lid !== id);
-      localStorage.setItem("cookfeed_liked", JSON.stringify(updatedLiked));
-      newLikeCount = Math.max(0, likeCount - 1);
-      setIsLiked(false);
-    } else {
-      // Like
-      likedRecipes.push(id);
-      localStorage.setItem("cookfeed_liked", JSON.stringify(likedRecipes));
-      newLikeCount = likeCount + 1;
-      setIsLiked(true);
+    try {
+      if (isLiked) {
+        // Unlike
+        await fetch(`/api/recipes/${id}/like`, { method: "DELETE" });
+        setLikeCount(Math.max(0, likeCount - 1));
+        setIsLiked(false);
+      } else {
+        // Like
+        await fetch(`/api/recipes/${id}/like`, { method: "POST" });
+        setLikeCount(likeCount + 1);
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
     }
-    
-    setLikeCount(newLikeCount);
-    
-    // Update recipe in localStorage
-    const updatedRecipes = storedRecipes.map((r: Recipe) => 
-      r.id === id ? { ...r, likes: newLikeCount } : r
-    );
-    localStorage.setItem("cookfeed_recipes", JSON.stringify(updatedRecipes));
   };
 
   const handleShare = async () => {
@@ -133,113 +135,93 @@ export default function RecipeDetailPage({
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!recipe) return;
     
     if (confirm("Are you sure you want to delete this recipe?")) {
-      const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-      const updated = storedRecipes.filter((r: Recipe) => r.id !== recipe.id);
-      localStorage.setItem("cookfeed_recipes", JSON.stringify(updated));
-      
-      // Also remove from favorites if present
-      const favorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-      const updatedFavorites = favorites.filter((f: Recipe) => f.id !== recipe.id);
-      localStorage.setItem("cookfeed_favorites", JSON.stringify(updatedFavorites));
-      
-      router.push("/feed");
+      try {
+        const res = await fetch(`/api/recipes/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          router.push("/feed");
+        }
+      } catch (error) {
+        console.error("Failed to delete recipe:", error);
+      }
     }
     setShowMenu(false);
   };
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     if (!recipe) return;
     
     if (isFavorited) {
       // Remove from favorites
-      const favorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-      const updated = favorites.filter((f: Recipe) => f.id !== recipe.id);
-      localStorage.setItem("cookfeed_favorites", JSON.stringify(updated));
-      setIsFavorited(false);
-      setCurrentCollection(null);
+      try {
+        await fetch(`/api/recipes/${id}/favorite`, { method: "DELETE" });
+        setIsFavorited(false);
+        setCurrentCollection(null);
+      } catch (error) {
+        console.error("Failed to remove favorite:", error);
+      }
     } else {
       // Show collection picker
       setShowCollectionPicker(true);
     }
   };
 
-  const saveToCollection = (collectionName: string) => {
+  const saveToCollection = async (collectionName: string) => {
     if (!recipe) return;
     
-    const favorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-    
-    // Check if already in favorites (update collection)
-    const existingIndex = favorites.findIndex((f: { id: string }) => f.id === recipe.id);
-    
-    if (existingIndex >= 0) {
-      favorites[existingIndex].collection = collectionName;
-    } else {
-      favorites.push({
-        id: recipe.id,
-        title: recipe.title,
-        image: recipe.image,
-        author: recipe.author,
-        tags: recipe.tags,
-        collection: collectionName,
+    try {
+      await fetch(`/api/recipes/${id}/favorite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ collection: collectionName }),
       });
+      setIsFavorited(true);
+      setCurrentCollection(collectionName);
+      setShowCollectionPicker(false);
+    } catch (error) {
+      console.error("Failed to save to collection:", error);
     }
-    
-    localStorage.setItem("cookfeed_favorites", JSON.stringify(favorites));
-    setIsFavorited(true);
-    setCurrentCollection(collectionName);
-    setShowCollectionPicker(false);
   };
 
-  const handleMadeThis = () => {
+  const handleMadeThis = async () => {
     if (!recipe) return;
     
-    const madeRecipes = JSON.parse(localStorage.getItem("cookfeed_made") || "[]");
-    
-    if (madeThis) {
-      // Remove from made list
-      const updated = madeRecipes.filter((rid: string) => rid !== id);
-      localStorage.setItem("cookfeed_made", JSON.stringify(updated));
-      setMadeThis(false);
-    } else {
-      // Add to made list
-      madeRecipes.push(id);
-      localStorage.setItem("cookfeed_made", JSON.stringify(madeRecipes));
-      setMadeThis(true);
-      setShowMadeToast(true);
-      setTimeout(() => setShowMadeToast(false), 2000);
+    try {
+      if (madeThis) {
+        await fetch(`/api/recipes/${id}/made`, { method: "DELETE" });
+        setMadeThis(false);
+      } else {
+        await fetch(`/api/recipes/${id}/made`, { method: "POST" });
+        setMadeThis(true);
+        setShowMadeToast(true);
+        setTimeout(() => setShowMadeToast(false), 2000);
+      }
+    } catch (error) {
+      console.error("Failed to toggle made:", error);
     }
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim() || !recipe) return;
     
-    const allComments = JSON.parse(localStorage.getItem("cookfeed_comments") || "{}");
-    const recipeComments = allComments[id] || [];
-    
-    const comment = {
-      id: Date.now().toString(),
-      author: "You",
-      text: newComment.trim(),
-      date: new Date().toLocaleDateString(),
-    };
-    
-    recipeComments.push(comment);
-    allComments[id] = recipeComments;
-    localStorage.setItem("cookfeed_comments", JSON.stringify(allComments));
-    
-    setComments(recipeComments);
-    setNewComment("");
-    
-    // Update comment count in recipe
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    const updatedRecipes = storedRecipes.map((r: Recipe) => 
-      r.id === id ? { ...r, comments: recipeComments.length } : r
-    );
-    localStorage.setItem("cookfeed_recipes", JSON.stringify(updatedRecipes));
+    try {
+      const res = await fetch(`/api/recipes/${id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newComment.trim() }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setComments([...comments, data.comment]);
+        setNewComment("");
+      }
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
   };
 
   if (loading) {
@@ -405,12 +387,16 @@ export default function RecipeDetailPage({
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{recipe.title}</h1>
         
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">{recipe.author.name.charAt(0)}</span>
+          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden">
+            {recipe.author_image ? (
+              <img src={recipe.author_image} alt={recipe.author} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-semibold">{recipe.author?.charAt(0) || "?"}</span>
+            )}
           </div>
           <div>
-            <p className="font-medium text-gray-900">{recipe.author.name}</p>
-            <p className="text-sm text-gray-500">{new Date(recipe.createdAt).toLocaleDateString()}</p>
+            <p className="font-medium text-gray-900">{recipe.author}</p>
+            <p className="text-sm text-gray-500">{new Date(recipe.created_at).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -467,11 +453,11 @@ export default function RecipeDetailPage({
         </div>
 
         {/* Ingredients */}
-        {recipe.ingredients.length > 0 && (
+        {recipe.ingredients && (
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Ingredients</h2>
             <ul className="space-y-3">
-              {recipe.ingredients.map((ingredient, index) => (
+              {parseList(recipe.ingredients).map((ingredient, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                     <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
@@ -484,11 +470,11 @@ export default function RecipeDetailPage({
         )}
 
         {/* Steps */}
-        {recipe.steps.length > 0 && (
+        {recipe.instructions && (
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Steps</h2>
             <ol className="space-y-4">
-              {recipe.steps.map((step, index) => (
+              {parseList(recipe.instructions).map((step, index) => (
                 <li key={index} className="flex gap-4">
                   <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center shrink-0">
                     <span className="text-white font-semibold text-sm">{index + 1}</span>
@@ -544,10 +530,10 @@ export default function RecipeDetailPage({
               {comments.map((comment) => (
                 <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900">{comment.author}</span>
-                    <span className="text-xs text-gray-500">{comment.date}</span>
+                    <span className="font-medium text-gray-900">{comment.user_name}</span>
+                    <span className="text-xs text-gray-500">{new Date(comment.created_at).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-gray-700">{comment.text}</p>
+                  <p className="text-gray-700">{comment.content}</p>
                 </div>
               ))}
             </div>

@@ -77,33 +77,31 @@ export default function AddRecipePage() {
     setError("");
 
     try {
-      // Create recipe object
-      const recipe = {
-        id: Date.now().toString(),
-        title,
-        description,
-        image,
-        ingredients: ingredients.filter((i) => i.trim()),
-        steps: steps.filter((s) => s.trim()),
-        tags,
-        isPublic,
-        likes: 0,
-        comments: 0,
-        createdAt: new Date().toISOString(),
-        author: {
-          name: "You",
-        },
-      };
+      // Create recipe via API
+      const response = await fetch("/api/recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          image,
+          visibility: isPublic ? "public" : "private",
+          tags,
+          ingredients: JSON.stringify(ingredients.filter((i) => i.trim())),
+          instructions: JSON.stringify(steps.filter((s) => s.trim())),
+        }),
+      });
 
-      // Save to localStorage (temporary until database is set up)
-      const existingRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-      existingRecipes.unshift(recipe);
-      localStorage.setItem("cookfeed_recipes", JSON.stringify(existingRecipes));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to save recipe");
+      }
 
       // Redirect to feed
       router.push("/feed");
-    } catch {
-      setError("Failed to save recipe. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save recipe. Please try again.");
     } finally {
       setIsLoading(false);
     }

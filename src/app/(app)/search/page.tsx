@@ -8,9 +8,10 @@ type Recipe = {
   title: string;
   description?: string;
   image?: string;
-  author: { name: string };
+  author: string;
+  author_image?: string;
   tags: string[];
-  isPublic: boolean;
+  visibility: string;
 };
 
 const popularTags = ["Italian", "Mexican", "Asian", "Vegan", "Dessert", "Quick", "Healthy", "Comfort Food"];
@@ -19,11 +20,23 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [results, setResults] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load recipes from localStorage
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    setAllRecipes(storedRecipes);
+    async function loadRecipes() {
+      try {
+        const res = await fetch("/api/recipes");
+        if (res.ok) {
+          const data = await res.json();
+          setAllRecipes(data.recipes || []);
+        }
+      } catch (error) {
+        console.error("Failed to load recipes:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRecipes();
   }, []);
 
   useEffect(() => {
@@ -34,7 +47,7 @@ export default function SearchPage() {
         return (
           recipe.title.toLowerCase().includes(searchTerm) ||
           recipe.description?.toLowerCase().includes(searchTerm) ||
-          recipe.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
+          recipe.tags?.some((tag) => tag.toLowerCase().includes(searchTerm))
         );
       });
       setResults(filtered);
@@ -111,7 +124,7 @@ export default function SearchPage() {
       )}
 
       {/* Empty State when no recipes exist */}
-      {!query && allRecipes.length === 0 && (
+      {!query && !loading && allRecipes.length === 0 && (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">📝</span>
@@ -121,6 +134,13 @@ export default function SearchPage() {
           <Link href="/recipe/add" className="btn-primary inline-block">
             Add Your First Recipe
           </Link>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
         </div>
       )}
 
@@ -158,8 +178,8 @@ export default function SearchPage() {
                   </div>
                   <div className="flex-1 flex flex-col justify-center">
                     <h3 className="font-semibold text-gray-900">{recipe.title}</h3>
-                    <p className="text-sm text-gray-500">by {recipe.author.name}</p>
-                    {recipe.tags.length > 0 && (
+                    <p className="text-sm text-gray-500">by {recipe.author}</p>
+                    {recipe.tags?.length > 0 && (
                       <div className="flex gap-1 mt-1">
                         {recipe.tags.slice(0, 3).map((tag) => (
                           <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">

@@ -8,12 +8,13 @@ type Recipe = {
   title: string;
   description?: string;
   image?: string;
-  author: { name: string };
+  author: string;
+  author_image?: string;
   likes: number;
-  comments: number;
+  comments?: number;
   tags: string[];
-  isPublic: boolean;
-  createdAt: string;
+  visibility: string;
+  created_at: string;
 };
 
 const filterTags = ["All", "Vegan", "Quick", "Dessert", "Italian", "Mexican", "Asian", "Healthy", "Breakfast", "Lunch", "Dinner", "Snack", "Gluten-Free", "Dairy-Free", "Keto", "Comfort Food"];
@@ -21,17 +22,30 @@ const filterTags = ["All", "Vegan", "Quick", "Dessert", "Italian", "Mexican", "A
 export default function FeedPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedTag, setSelectedTag] = useState("All");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load recipes from localStorage
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    setRecipes(storedRecipes);
+    // Load recipes from database API
+    async function loadRecipes() {
+      try {
+        const res = await fetch("/api/recipes");
+        if (res.ok) {
+          const data = await res.json();
+          setRecipes(data.recipes || []);
+        }
+      } catch (error) {
+        console.error("Failed to load recipes:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRecipes();
   }, []);
 
   // Filter recipes by tag
   const filteredRecipes = selectedTag === "All" 
     ? recipes 
-    : recipes.filter(r => r.tags.some(t => t.toLowerCase() === selectedTag.toLowerCase()));
+    : recipes.filter(r => r.tags?.some(t => t.toLowerCase() === selectedTag.toLowerCase()));
 
   return (
     <main className="px-4 pt-4">
@@ -66,7 +80,11 @@ export default function FeedPage() {
       </div>
 
       {/* Empty State */}
-      {filteredRecipes.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : filteredRecipes.length === 0 ? (
         <div className="text-center py-16">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-5xl">🍳</span>
@@ -98,17 +116,21 @@ export default function FeedPage() {
               </div>
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">{recipe.author.name.charAt(0)}</span>
+                  <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden">
+                    {recipe.author_image ? (
+                      <img src={recipe.author_image} alt={recipe.author} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white text-sm font-medium">{(recipe.author || "A").charAt(0)}</span>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-600">{recipe.author.name}</span>
+                  <span className="text-sm text-gray-600">{recipe.author || "Anonymous"}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{recipe.title}</h3>
                 {recipe.description && (
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{recipe.description}</p>
                 )}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {recipe.tags.map((tag) => (
+                  {(recipe.tags || []).map((tag) => (
                     <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                       #{tag}
                     </span>
@@ -119,13 +141,13 @@ export default function FeedPage() {
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
-                    {recipe.likes}
+                    {recipe.likes || 0}
                   </span>
                   <span className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    {recipe.comments}
+                    {recipe.comments || 0}
                   </span>
                 </div>
               </div>

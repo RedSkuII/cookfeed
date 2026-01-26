@@ -7,7 +7,8 @@ type Recipe = {
   id: string;
   title: string;
   image?: string;
-  author: { name: string };
+  author: string;
+  author_image?: string;
   tags: string[];
   collection?: string;
 };
@@ -16,44 +17,47 @@ const DEFAULT_COLLECTIONS = ["All Saved", "Favorites", "To Try", "Weeknight", "S
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
   const [collections, setCollections] = useState<string[]>(DEFAULT_COLLECTIONS);
   const [selectedCollection, setSelectedCollection] = useState("All Saved");
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
 
   useEffect(() => {
-    // Load favorites from localStorage and sync with main recipes to get latest images
-    const storedFavorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-    const allRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    const storedCollections = JSON.parse(localStorage.getItem("cookfeed_collections") || "null");
+    async function loadFavorites() {
+      try {
+        const res = await fetch("/api/favorites");
+        if (res.ok) {
+          const data = await res.json();
+          setFavorites(data.favorites || []);
+        }
+      } catch (error) {
+        console.error("Failed to load favorites:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
     
+    // Load collections from localStorage (still local for now)
+    const storedCollections = JSON.parse(localStorage.getItem("cookfeed_collections") || "null");
     if (storedCollections) {
       setCollections(storedCollections);
     } else {
       localStorage.setItem("cookfeed_collections", JSON.stringify(DEFAULT_COLLECTIONS));
     }
     
-    // Update favorites with latest data from main recipes (especially images)
-    const syncedFavorites = storedFavorites.map((fav: Recipe) => {
-      const fullRecipe = allRecipes.find((r: Recipe) => r.id === fav.id);
-      if (fullRecipe) {
-        return {
-          ...fav,
-          image: fullRecipe.image,
-          title: fullRecipe.title,
-        };
-      }
-      return fav;
-    });
-    
-    localStorage.setItem("cookfeed_favorites", JSON.stringify(syncedFavorites));
-    setFavorites(syncedFavorites);
+    loadFavorites();
   }, []);
 
-  const removeFavorite = (id: string) => {
-    const updatedFavorites = favorites.filter((f) => f.id !== id);
-    setFavorites(updatedFavorites);
-    localStorage.setItem("cookfeed_favorites", JSON.stringify(updatedFavorites));
+  const removeFavorite = async (id: string) => {
+    try {
+      const res = await fetch(`/api/recipes/${id}/favorite`, { method: "DELETE" });
+      if (res.ok) {
+        setFavorites(favorites.filter((f) => f.id !== id));
+      }
+    } catch (error) {
+      console.error("Failed to remove favorite:", error);
+    }
   };
 
   const addCollection = () => {
@@ -144,7 +148,11 @@ export default function FavoritesPage() {
       </div>
 
       {/* Empty State */}
-      {filteredFavorites.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      ) : filteredFavorites.length === 0 ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">📁</span>
@@ -182,7 +190,7 @@ export default function FavoritesPage() {
               {/* Info */}
               <div className="flex-1 flex flex-col justify-center">
                 <h3 className="font-semibold text-gray-900">{recipe.title}</h3>
-                <p className="text-sm text-gray-500">by {recipe.author.name}</p>
+                <p className="text-sm text-gray-500">by {recipe.author}</p>
                 {recipe.collection && (
                   <span className="text-xs text-primary-500 mt-1">📁 {recipe.collection}</span>
                 )}

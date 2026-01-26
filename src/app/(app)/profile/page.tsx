@@ -9,7 +9,7 @@ type Recipe = {
   title: string;
   description?: string;
   image?: string;
-  isPublic: boolean;
+  visibility: string;
   tags: string[];
 };
 
@@ -17,22 +17,31 @@ export default function ProfilePage() {
   const { data: session } = useSession();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [madeRecipes, setMadeRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "public" | "private" | "made">("all");
   const [profile, setProfile] = useState<{ name?: string; bio?: string; profileImage?: string }>({});
 
   useEffect(() => {
-    // Load recipes from localStorage
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    setRecipes(storedRecipes);
+    async function loadData() {
+      try {
+        const res = await fetch("/api/user/recipes");
+        if (res.ok) {
+          const data = await res.json();
+          setRecipes(data.recipes || []);
+          setMadeRecipes(data.madeRecipes || []);
+        }
+      } catch (error) {
+        console.error("Failed to load recipes:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // Load "made" recipe IDs and get full recipe data
-    const madeIds = JSON.parse(localStorage.getItem("cookfeed_made") || "[]");
-    const madeRecipesList = storedRecipes.filter((r: Recipe) => madeIds.includes(r.id));
-    setMadeRecipes(madeRecipesList);
-    
-    // Load profile from localStorage
+    // Load profile from localStorage (could be moved to API later)
     const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
     setProfile(savedProfile);
+    
+    loadData();
   }, []);
 
   // Filter recipes based on active tab
@@ -40,10 +49,13 @@ export default function ProfilePage() {
     ? madeRecipes 
     : recipes.filter((recipe) => {
         if (activeTab === "all") return true;
-        if (activeTab === "public") return recipe.isPublic;
-        if (activeTab === "private") return !recipe.isPublic;
+        if (activeTab === "public") return recipe.visibility === "public";
+        if (activeTab === "private") return recipe.visibility === "private";
         return true;
       });
+
+  const publicCount = recipes.filter(r => r.visibility === "public").length;
+  const privateCount = recipes.filter(r => r.visibility === "private").length;
 
   return (
     <main className="px-4 pt-4">
@@ -125,7 +137,7 @@ export default function ProfilePage() {
               : "text-gray-500"
           }`}
         >
-          Public ({recipes.filter(r => r.isPublic).length})
+          Public ({publicCount})
         </button>
         <button 
           onClick={() => setActiveTab("private")}
@@ -135,7 +147,7 @@ export default function ProfilePage() {
               : "text-gray-500"
           }`}
         >
-          Private ({recipes.filter(r => !r.isPublic).length})
+          Private ({privateCount})
         </button>
         <button 
           onClick={() => setActiveTab("made")}
@@ -149,8 +161,13 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Empty State */}
-      {filteredRecipes.length === 0 ? (
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      ) : filteredRecipes.length === 0 ? (
+        /* Empty State */
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">📝</span>
@@ -174,7 +191,7 @@ export default function ProfilePage() {
                 </div>
               )}
               {/* Private indicator */}
-              {!recipe.isPublic && (
+              {recipe.visibility === "private" && (
                 <div className="absolute top-1 right-1 bg-gray-800/70 rounded-full p-1">
                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
