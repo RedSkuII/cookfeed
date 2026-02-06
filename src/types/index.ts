@@ -101,3 +101,23 @@ export interface LoginInput {
   email: string;
   password: string;
 }
+
+export interface RecipeEditor {
+  id: string;
+  recipe_id: string;
+  user_id: string;
+  can_edit: number;
+  can_delete: number;
+  can_manage_editors: number;
+  added_by: string;
+  created_at: string;
+  updated_at: string;
+  name?: string;
+  profile_image?: string;
+}
+
+export interface EditorPermissions {
+  can_edit: number;
+  can_delete: number;
+  can_manage_editors: number;
+}

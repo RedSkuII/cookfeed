@@ -162,6 +162,23 @@ export const schema = `
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
+  -- Recipe editors table (collaborative editing permissions)
+  CREATE TABLE IF NOT EXISTS recipe_editors (
+    id TEXT PRIMARY KEY,
+    recipe_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    can_edit INTEGER DEFAULT 1,
+    can_delete INTEGER DEFAULT 0,
+    can_manage_editors INTEGER DEFAULT 0,
+    added_by TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(recipe_id, user_id)
+  );
+
   -- Indexes for performance
   CREATE INDEX IF NOT EXISTS idx_recipes_user_id ON recipes(user_id);
   CREATE INDEX IF NOT EXISTS idx_recipes_visibility ON recipes(visibility);
@@ -171,6 +188,8 @@ export const schema = `
   CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
   CREATE INDEX IF NOT EXISTS idx_likes_recipe_id ON likes(recipe_id);
   CREATE INDEX IF NOT EXISTS idx_made_recipes_user_id ON made_recipes(user_id);
+  CREATE INDEX IF NOT EXISTS idx_recipe_editors_recipe_id ON recipe_editors(recipe_id);
+  CREATE INDEX IF NOT EXISTS idx_recipe_editors_user_id ON recipe_editors(user_id);
 `;
 
 // Initialize database schema

@@ -15,6 +15,24 @@ export async function GET() {
       `ALTER TABLE collections ADD COLUMN is_public INTEGER DEFAULT 1`,
       // Add password_hash column to users for email/password auth
       `ALTER TABLE users ADD COLUMN password_hash TEXT`,
+      // Create recipe_editors table for collaborative editing
+      `CREATE TABLE IF NOT EXISTS recipe_editors (
+        id TEXT PRIMARY KEY,
+        recipe_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        can_edit INTEGER DEFAULT 1,
+        can_delete INTEGER DEFAULT 0,
+        can_manage_editors INTEGER DEFAULT 0,
+        added_by TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(recipe_id, user_id)
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_recipe_editors_recipe_id ON recipe_editors(recipe_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_recipe_editors_user_id ON recipe_editors(user_id)`,
     ];
 
     const results: { migration: string; status: string }[] = [];

@@ -62,6 +62,20 @@ export async function GET(
       isFavorited = favResult.rows.length > 0;
     }
 
+    // Check if current user has editor permissions
+    let editorPermissions = null;
+    if (session?.user?.id && row.user_id !== session.user.id) {
+      const editorResult = await db.execute({
+        sql: `SELECT can_edit, can_delete, can_manage_editors
+              FROM recipe_editors
+              WHERE recipe_id = ? AND user_id = ?`,
+        args: [id, session.user.id],
+      });
+      if (editorResult.rows.length > 0) {
+        editorPermissions = editorResult.rows[0];
+      }
+    }
+
     // Get comments
     const commentsResult = await db.execute({
       sql: `SELECT c.*, u.name as user_name, u.profile_image as user_image
@@ -79,6 +93,7 @@ export async function GET(
       isFavorited,
       allowComments,
       comments: commentsResult.rows,
+      editorPermissions,
     });
   } catch (error) {
     console.error("Failed to get recipe:", error);
@@ -100,7 +115,7 @@ export async function DELETE(
     const { id } = await params;
     const db = getDb();
 
-    // Check if user owns this recipe
+    // Check if user owns this recipe or has delete permission
     const result = await db.execute({
       sql: `SELECT user_id FROM recipes WHERE id = ?`,
       args: [id],
@@ -110,8 +125,18 @@ export async function DELETE(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    if (result.rows[0].user_id !== session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const isOwner = result.rows[0].user_id === session.user.id;
+
+    if (!isOwner) {
+      const editorResult = await db.execute({
+        sql: `SELECT can_delete FROM recipe_editors
+              WHERE recipe_id = ? AND user_id = ?`,
+        args: [id, session.user.id],
+      });
+
+      if (editorResult.rows.length === 0 || Number(editorResult.rows[0].can_delete) !== 1) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
     }
 
     await db.execute({
@@ -141,7 +166,7 @@ export async function PUT(
     const body = await request.json();
     const db = getDb();
 
-    // Check if user owns this recipe
+    // Check if user owns this recipe or has edit permission
     const result = await db.execute({
       sql: `SELECT user_id FROM recipes WHERE id = ?`,
       args: [id],
@@ -151,8 +176,18 @@ export async function PUT(
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    if (result.rows[0].user_id !== session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const isOwner = result.rows[0].user_id === session.user.id;
+
+    if (!isOwner) {
+      const editorResult = await db.execute({
+        sql: `SELECT can_edit FROM recipe_editors
+              WHERE recipe_id = ? AND user_id = ?`,
+        args: [id, session.user.id],
+      });
+
+      if (editorResult.rows.length === 0 || Number(editorResult.rows[0].can_edit) !== 1) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      }
     }
 
     const {

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import ManageEditorsModal from "@/components/ManageEditorsModal";
 
 type Recipe = {
   id: string;
@@ -48,6 +50,7 @@ export default function RecipeDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -63,6 +66,18 @@ export default function RecipeDetailPage({
   const [collections, setCollections] = useState<string[]>([]);
   const [currentCollection, setCurrentCollection] = useState<string | null>(null);
   const [allowComments, setAllowComments] = useState(true);
+  const [editorPermissions, setEditorPermissions] = useState<{
+    can_edit: number;
+    can_delete: number;
+    can_manage_editors: number;
+  } | null>(null);
+  const [showManageEditors, setShowManageEditors] = useState(false);
+
+  const isOwner = session?.user?.id === recipe?.user_id;
+  const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
+  const canDelete = isOwner || (editorPermissions && Number(editorPermissions.can_delete) === 1);
+  const canManageEditors = isOwner || (editorPermissions && Number(editorPermissions.can_manage_editors) === 1);
+  const showMenuButton = canEdit || canDelete || canManageEditors;
 
   useEffect(() => {
     // Load recipe from database
@@ -78,6 +93,7 @@ export default function RecipeDetailPage({
           setIsFavorited(data.isFavorited || false);
           setComments(data.comments || []);
           setAllowComments(data.allowComments !== false);
+          setEditorPermissions(data.editorPermissions || null);
         }
       } catch (error) {
         console.error("Failed to load recipe:", error);
@@ -277,6 +293,15 @@ export default function RecipeDetailPage({
 
   return (
     <main className="min-h-screen pb-20">
+      {/* Manage Editors Modal */}
+      {showManageEditors && (
+        <ManageEditorsModal
+          recipeId={id}
+          isOwner={isOwner}
+          onClose={() => setShowManageEditors(false)}
+        />
+      )}
+
       {/* Share Toast */}
       {showShareToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg">
@@ -336,7 +361,7 @@ export default function RecipeDetailPage({
           </svg>
         </Link>
         <div className="flex gap-2 relative">
-          <button 
+          <button
             onClick={handleShare}
             className="w-10 h-10 flex items-center justify-center"
           >
@@ -344,42 +369,59 @@ export default function RecipeDetailPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </button>
-          <button 
-            onClick={() => setShowMenu(!showMenu)}
-            className="w-10 h-10 flex items-center justify-center"
-          >
-            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-            </svg>
-          </button>
-          
+          {showMenuButton && (
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-10 h-10 flex items-center justify-center"
+            >
+              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+              </svg>
+            </button>
+          )}
+
           {/* Dropdown Menu */}
           {showMenu && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setShowMenu(false)}
               />
               <div className="absolute right-0 top-12 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-20">
-                <Link 
-                  href={`/recipe/${id}/edit`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700"
-                  onClick={() => setShowMenu(false)}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit Recipe
-                </Link>
-                <button 
-                  onClick={handleDelete}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600 w-full"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete Recipe
-                </button>
+                {canEdit && (
+                  <Link
+                    href={`/recipe/${id}/edit`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700"
+                    onClick={() => setShowMenu(false)}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Recipe
+                  </Link>
+                )}
+                {canManageEditors && (
+                  <button
+                    onClick={() => { setShowManageEditors(true); setShowMenu(false); }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 w-full"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Manage Editors
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={handleDelete}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600 w-full"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Recipe
+                  </button>
+                )}
               </div>
             </>
           )}

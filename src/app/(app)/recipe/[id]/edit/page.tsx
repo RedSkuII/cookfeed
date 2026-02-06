@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import ManageEditorsModal from "@/components/ManageEditorsModal";
 
-type Recipe = {
-  id: string;
-  title: string;
-  description?: string;
-  image?: string;
-  ingredients: string[];
-  steps: string[];
-  tags: string[];
-  isPublic: boolean;
-  likes: number;
-  comments: number;
-  author: { name: string };
-  createdAt: string;
-};
+// Helper to parse ingredients/instructions which could be JSON array or newline-separated string
+function parseList(data: string): string[] {
+  if (!data) return [];
+  try {
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch {
+    // Not JSON, treat as newline-separated
+  }
+  return data.split("\n").filter(Boolean);
+}
 
 export default function EditRecipePage({
   params,
@@ -26,8 +25,9 @@ export default function EditRecipePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
@@ -37,25 +37,51 @@ export default function EditRecipePage({
   const [tagInput, setTagInput] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState("");
-  const [originalRecipe, setOriginalRecipe] = useState<Recipe | null>(null);
+  const [recipeLoaded, setRecipeLoaded] = useState(false);
+  const [recipeOwnerId, setRecipeOwnerId] = useState<string | null>(null);
+  const [editorPermissions, setEditorPermissions] = useState<{
+    can_edit: number;
+    can_delete: number;
+    can_manage_editors: number;
+  } | null>(null);
+  const [showManageEditors, setShowManageEditors] = useState(false);
 
   useEffect(() => {
-    // Load recipe from localStorage
-    const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-    const found = storedRecipes.find((r: Recipe) => r.id === id);
-    
-    if (found) {
-      setOriginalRecipe(found);
-      setTitle(found.title);
-      setDescription(found.description || "");
-      setImage(found.image || null);
-      setIngredients(found.ingredients.length > 0 ? found.ingredients : [""]);
-      setSteps(found.steps.length > 0 ? found.steps : [""]);
-      setTags(found.tags || []);
-      setIsPublic(found.isPublic);
+    async function loadRecipe() {
+      try {
+        const res = await fetch(`/api/recipes/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const r = data.recipe;
+          setTitle(r.title || "");
+          setDescription(r.description || "");
+          setImage(r.image || null);
+          const ingredientsList = parseList(r.ingredients);
+          setIngredients(ingredientsList.length > 0 ? ingredientsList : [""]);
+          const stepsList = parseList(r.instructions);
+          setSteps(stepsList.length > 0 ? stepsList : [""]);
+          setTags(r.tags || []);
+          setIsPublic(r.visibility === "public");
+          setRecipeOwnerId(r.user_id);
+          setEditorPermissions(data.editorPermissions || null);
+          setRecipeLoaded(true);
+        } else {
+          setError("Recipe not found.");
+        }
+      } catch {
+        setError("Failed to load recipe.");
+      } finally {
+        setPageLoading(false);
+      }
     }
+    loadRecipe();
   }, [id]);
+
+  const isOwner = session?.user?.id === recipeOwnerId;
+  const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
+  const canManageEditors = isOwner || (editorPermissions && Number(editorPermissions.can_manage_editors) === 1);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,7 +90,7 @@ export default function EditRecipePage({
         setError("Image too large. Please use an image under 2MB.");
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
@@ -109,42 +135,33 @@ export default function EditRecipePage({
   };
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!originalRecipe) return;
-    
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
     setIsLoading(true);
     setError("");
 
     try {
-      // Create updated recipe object
-      const updatedRecipe: Recipe = {
-        ...originalRecipe,
-        title,
-        description,
-        image: image || undefined,
-        ingredients: ingredients.filter((i) => i.trim()),
-        steps: steps.filter((s) => s.trim()),
-        tags,
-        isPublic,
-      };
+      const res = await fetch(`/api/recipes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          image: image || null,
+          ingredients: ingredients.filter((i) => i.trim()),
+          instructions: steps.filter((s) => s.trim()),
+          tags,
+          visibility: isPublic ? "public" : "private",
+        }),
+      });
 
-      // Update in localStorage
-      const storedRecipes = JSON.parse(localStorage.getItem("cookfeed_recipes") || "[]");
-      const updatedRecipes = storedRecipes.map((r: Recipe) => 
-        r.id === id ? updatedRecipe : r
-      );
-      localStorage.setItem("cookfeed_recipes", JSON.stringify(updatedRecipes));
-
-      // Also update in favorites if it's there (including image!)
-      const favorites = JSON.parse(localStorage.getItem("cookfeed_favorites") || "[]");
-      const updatedFavorites = favorites.map((f: Recipe) => 
-        f.id === id ? { ...f, title: updatedRecipe.title, tags: updatedRecipe.tags, image: updatedRecipe.image } : f
-      );
-      localStorage.setItem("cookfeed_favorites", JSON.stringify(updatedFavorites));
-
-      // Redirect back to recipe
-      router.push(`/recipe/${id}`);
+      if (res.ok) {
+        router.push(`/recipe/${id}`);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to save recipe. Please try again.");
+      }
     } catch {
       setError("Failed to save recipe. Please try again.");
     } finally {
@@ -152,7 +169,7 @@ export default function EditRecipePage({
     }
   };
 
-  if (!originalRecipe) {
+  if (pageLoading) {
     return (
       <main className="px-4 pt-4 pb-8">
         <div className="flex items-center justify-center min-h-[50vh]">
@@ -162,8 +179,30 @@ export default function EditRecipePage({
     );
   }
 
+  if (!recipeLoaded || (!canEdit && !pageLoading)) {
+    return (
+      <main className="px-4 pt-4 pb-8">
+        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+          <p className="text-gray-500">{error || "You don't have permission to edit this recipe."}</p>
+          <Link href={`/recipe/${id}`} className="text-primary-500 font-medium">
+            Back to Recipe
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="px-4 pt-4 pb-8">
+      {/* Manage Editors Modal */}
+      {showManageEditors && (
+        <ManageEditorsModal
+          recipeId={id}
+          isOwner={isOwner}
+          onClose={() => setShowManageEditors(false)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <Link href={`/recipe/${id}`} className="flex items-center text-gray-600">
@@ -173,7 +212,7 @@ export default function EditRecipePage({
         </Link>
         <h1 className="text-xl font-bold text-gray-900">Edit Recipe</h1>
         <button
-          onClick={handleSubmit}
+          onClick={() => handleSubmit()}
           disabled={isLoading || !title.trim()}
           className="text-primary-500 font-semibold disabled:opacity-50"
         >
@@ -211,7 +250,7 @@ export default function EditRecipePage({
             </button>
           </div>
         ) : (
-          <div 
+          <div
             onClick={() => fileInputRef.current?.click()}
             className="aspect-video bg-gray-100 rounded-2xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors"
           >
@@ -332,7 +371,7 @@ export default function EditRecipePage({
         {/* Tags */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-          
+
           {/* Selected Tags */}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
@@ -420,6 +459,22 @@ export default function EditRecipePage({
             />
           </button>
         </div>
+
+        {/* Manage Editors */}
+        {canManageEditors && (
+          <div className="py-4 border-b border-gray-200">
+            <button
+              type="button"
+              onClick={() => setShowManageEditors(true)}
+              className="flex items-center gap-3 text-primary-500 font-medium"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              Manage Editors
+            </button>
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="space-y-3 pt-4">
