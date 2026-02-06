@@ -50,7 +50,7 @@ export default function RecipeDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -77,7 +77,7 @@ export default function RecipeDetailPage({
   const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
   const canDelete = isOwner || (editorPermissions && Number(editorPermissions.can_delete) === 1);
   const canManageEditors = isOwner || (editorPermissions && Number(editorPermissions.can_manage_editors) === 1);
-  const showMenuButton = canEdit || canDelete || canManageEditors;
+  const showMenuButton = sessionStatus !== "loading" && (canEdit || canDelete || canManageEditors);
 
   useEffect(() => {
     // Load recipe from database

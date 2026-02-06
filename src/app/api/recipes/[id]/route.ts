@@ -65,14 +65,18 @@ export async function GET(
     // Check if current user has editor permissions
     let editorPermissions = null;
     if (session?.user?.id && row.user_id !== session.user.id) {
-      const editorResult = await db.execute({
-        sql: `SELECT can_edit, can_delete, can_manage_editors
-              FROM recipe_editors
-              WHERE recipe_id = ? AND user_id = ?`,
-        args: [id, session.user.id],
-      });
-      if (editorResult.rows.length > 0) {
-        editorPermissions = editorResult.rows[0];
+      try {
+        const editorResult = await db.execute({
+          sql: `SELECT can_edit, can_delete, can_manage_editors
+                FROM recipe_editors
+                WHERE recipe_id = ? AND user_id = ?`,
+          args: [id, session.user.id],
+        });
+        if (editorResult.rows.length > 0) {
+          editorPermissions = editorResult.rows[0];
+        }
+      } catch {
+        // Table may not exist yet - ignore
       }
     }
 
@@ -128,13 +132,19 @@ export async function DELETE(
     const isOwner = result.rows[0].user_id === session.user.id;
 
     if (!isOwner) {
-      const editorResult = await db.execute({
-        sql: `SELECT can_delete FROM recipe_editors
-              WHERE recipe_id = ? AND user_id = ?`,
-        args: [id, session.user.id],
-      });
+      let hasDeletePermission = false;
+      try {
+        const editorResult = await db.execute({
+          sql: `SELECT can_delete FROM recipe_editors
+                WHERE recipe_id = ? AND user_id = ?`,
+          args: [id, session.user.id],
+        });
+        hasDeletePermission = editorResult.rows.length > 0 && Number(editorResult.rows[0].can_delete) === 1;
+      } catch {
+        // Table may not exist yet
+      }
 
-      if (editorResult.rows.length === 0 || Number(editorResult.rows[0].can_delete) !== 1) {
+      if (!hasDeletePermission) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
       }
     }
@@ -179,13 +189,19 @@ export async function PUT(
     const isOwner = result.rows[0].user_id === session.user.id;
 
     if (!isOwner) {
-      const editorResult = await db.execute({
-        sql: `SELECT can_edit FROM recipe_editors
-              WHERE recipe_id = ? AND user_id = ?`,
-        args: [id, session.user.id],
-      });
+      let hasEditPermission = false;
+      try {
+        const editorResult = await db.execute({
+          sql: `SELECT can_edit FROM recipe_editors
+                WHERE recipe_id = ? AND user_id = ?`,
+          args: [id, session.user.id],
+        });
+        hasEditPermission = editorResult.rows.length > 0 && Number(editorResult.rows[0].can_edit) === 1;
+      } catch {
+        // Table may not exist yet
+      }
 
-      if (editorResult.rows.length === 0 || Number(editorResult.rows[0].can_edit) !== 1) {
+      if (!hasEditPermission) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
       }
     }

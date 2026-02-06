@@ -25,7 +25,7 @@ export default function EditRecipePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
@@ -79,6 +79,7 @@ export default function EditRecipePage({
     loadRecipe();
   }, [id]);
 
+  const sessionLoading = sessionStatus === "loading";
   const isOwner = session?.user?.id === recipeOwnerId;
   const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
   const canManageEditors = isOwner || (editorPermissions && Number(editorPermissions.can_manage_editors) === 1);
@@ -169,7 +170,7 @@ export default function EditRecipePage({
     }
   };
 
-  if (pageLoading) {
+  if (pageLoading || sessionLoading) {
     return (
       <main className="px-4 pt-4 pb-8">
         <div className="flex items-center justify-center min-h-[50vh]">
@@ -179,7 +180,7 @@ export default function EditRecipePage({
     );
   }
 
-  if (!recipeLoaded || (!canEdit && !pageLoading)) {
+  if (!recipeLoaded || !canEdit) {
     return (
       <main className="px-4 pt-4 pb-8">
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
