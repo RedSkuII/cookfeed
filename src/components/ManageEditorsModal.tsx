@@ -31,6 +31,7 @@ export default function ManageEditorsModal({
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadEditors();
@@ -81,6 +82,7 @@ export default function ManageEditorsModal({
   }
 
   async function addEditor(userId: string) {
+    setError("");
     try {
       const res = await fetch(`/api/recipes/${recipeId}/editors`, {
         method: "POST",
@@ -96,9 +98,13 @@ export default function ManageEditorsModal({
         setSearchQuery("");
         setSearchResults([]);
         await loadEditors();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to add editor. Please try again.");
       }
     } catch (error) {
       console.error("Failed to add editor:", error);
+      setError("Failed to add editor. Please check your connection.");
     }
   }
 
@@ -189,13 +195,19 @@ export default function ManageEditorsModal({
 
         {/* User Search */}
         <div className="mb-4">
+          {/* Error message */}
+          {error && (
+            <div className="mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl text-sm">
+              {error}
+            </div>
+          )}
           <div className="relative">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search users by name..."
-              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
             />
             <svg
               className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"

@@ -24,17 +24,22 @@ async function canManageEditors(
     return { allowed: true, isOwner: true, recipeOwnerId };
   }
 
-  const editorCheck = await db.execute({
-    sql: `SELECT can_manage_editors FROM recipe_editors
-          WHERE recipe_id = ? AND user_id = ?`,
-    args: [recipeId, userId],
-  });
+  try {
+    const editorCheck = await db.execute({
+      sql: `SELECT can_manage_editors FROM recipe_editors
+            WHERE recipe_id = ? AND user_id = ?`,
+      args: [recipeId, userId],
+    });
 
-  const allowed =
-    editorCheck.rows.length > 0 &&
-    Number(editorCheck.rows[0].can_manage_editors) === 1;
+    const allowed =
+      editorCheck.rows.length > 0 &&
+      Number(editorCheck.rows[0].can_manage_editors) === 1;
 
-  return { allowed, isOwner: false, recipeOwnerId };
+    return { allowed, isOwner: false, recipeOwnerId };
+  } catch {
+    // Table may not exist yet
+    return { allowed: false, isOwner: false, recipeOwnerId };
+  }
 }
 
 // GET /api/recipes/[id]/editors - List all editors for a recipe
@@ -72,7 +77,7 @@ export async function GET(
             WHERE re.recipe_id = ?
             ORDER BY re.created_at ASC`,
       args: [id],
-    });
+    }).catch(() => ({ rows: [] }));
 
     return NextResponse.json({ editors: editors.rows, isOwner });
   } catch (error) {
@@ -122,6 +127,23 @@ export async function POST(
     }
 
     const editorId = `editor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Ensure table exists before inserting
+    await db.execute({
+      sql: `CREATE TABLE IF NOT EXISTS recipe_editors (
+        id TEXT PRIMARY KEY,
+        recipe_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        can_edit INTEGER DEFAULT 1,
+        can_delete INTEGER DEFAULT 0,
+        can_manage_editors INTEGER DEFAULT 0,
+        added_by TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(recipe_id, user_id)
+      )`,
+      args: [],
+    });
 
     await db.execute({
       sql: `INSERT OR REPLACE INTO recipe_editors
