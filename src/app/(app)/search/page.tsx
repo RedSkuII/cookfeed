@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 type Recipe = {
   id: string;
@@ -17,17 +18,22 @@ type Recipe = {
 type UserResult = {
   id: string;
   name: string;
+  email?: string;
   profile_image?: string;
+  recipe_count?: number;
+  follower_count?: number;
 };
 
 const popularTags = ["Italian", "Mexican", "Asian", "Vegan", "Dessert", "Quick", "Healthy", "Comfort Food"];
 
 export default function SearchPage() {
+  const { data: session } = useSession();
   const [query, setQuery] = useState("");
   const [searchTab, setSearchTab] = useState<"recipes" | "people">("recipes");
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [results, setResults] = useState<Recipe[]>([]);
   const [userResults, setUserResults] = useState<UserResult[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [searchingUsers, setSearchingUsers] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -79,6 +85,12 @@ export default function SearchPage() {
         if (res.ok) {
           const data = await res.json();
           setUserResults(data.users || []);
+          // Build set of user IDs we're following
+          const following = new Set<string>();
+          for (const u of data.users || []) {
+            if (u.is_following) following.add(u.id);
+          }
+          setFollowingIds(following);
         }
       } catch (error) {
         console.error("Failed to search users:", error);
@@ -94,37 +106,59 @@ export default function SearchPage() {
     e.preventDefault();
   };
 
+  const handleFollow = async (userId: string) => {
+    if (!session?.user?.id) return;
+    const isFollowing = followingIds.has(userId);
+    try {
+      const res = await fetch(`/api/users/${userId}/follow`, {
+        method: isFollowing ? "DELETE" : "POST",
+      });
+      if (res.ok) {
+        setFollowingIds(prev => {
+          const next = new Set(prev);
+          if (isFollowing) next.delete(userId);
+          else next.add(userId);
+          return next;
+        });
+      }
+    } catch (error) {
+      console.error("Failed to toggle follow:", error);
+    }
+  };
+
   return (
     <main className="px-4 pt-4">
       {/* Search Header */}
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Search</h1>
+        <h1 className="text-xl font-extrabold text-gray-900 mb-4">Search</h1>
 
         {/* Search Input */}
         <form onSubmit={handleSearch} className="relative">
           <svg
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
             fill="none"
             stroke="currentColor"
+            strokeWidth={2}
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
           </svg>
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchTab === "recipes" ? "Search recipes, ingredients, tags..." : "Search people by name..."}
-            className="w-full pl-12 pr-4 py-3 bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900"
+            className="w-full pl-10 pr-10 py-2.5 bg-white rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 text-sm text-gray-900 font-medium"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           )}
@@ -132,23 +166,23 @@ export default function SearchPage() {
       </div>
 
       {/* Tabs: Recipes | People */}
-      <div className="flex border-b-2 border-gray-200 mb-4">
+      <div className="flex border-b-2 border-primary-100 mb-5">
         <button
           onClick={() => setSearchTab("recipes")}
-          className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
+          className={`flex-1 py-2.5 text-center text-sm border-b-2 -mb-[2px] transition-colors ${
             searchTab === "recipes"
-              ? "text-primary-500 border-primary-500"
-              : "text-gray-500 border-transparent"
+              ? "text-primary-500 border-primary-500 font-bold"
+              : "text-gray-400 border-transparent font-semibold"
           }`}
         >
           Recipes
         </button>
         <button
           onClick={() => setSearchTab("people")}
-          className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
+          className={`flex-1 py-2.5 text-center text-sm border-b-2 -mb-[2px] transition-colors ${
             searchTab === "people"
-              ? "text-primary-500 border-primary-500"
-              : "text-gray-500 border-transparent"
+              ? "text-primary-500 border-primary-500 font-bold"
+              : "text-gray-400 border-transparent font-semibold"
           }`}
         >
           People
@@ -162,7 +196,7 @@ export default function SearchPage() {
           {!query && allRecipes.length > 0 && (
             <>
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">Your Recipes</h2>
+                <h2 className="text-base font-extrabold text-gray-900 mb-3">Your Recipes</h2>
                 <div className="space-y-2">
                   {allRecipes.slice(0, 4).map((recipe) => (
                     <Link
@@ -178,13 +212,13 @@ export default function SearchPage() {
               </div>
 
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">Browse by Category</h2>
+                <h2 className="text-base font-extrabold text-gray-900 mb-3">Browse by Category</h2>
                 <div className="flex flex-wrap gap-2">
                   {popularTags.map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setQuery(tag)}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors"
+                      className="px-4 py-1.5 bg-white text-gray-600 rounded-full text-xs font-bold shadow-sm hover:bg-gray-50 transition-colors"
                     >
                       {tag}
                     </button>
@@ -201,7 +235,7 @@ export default function SearchPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No recipes to search</h3>
               <p className="text-gray-600 mb-6">Add some recipes first to search through them</p>
-              <Link href="/recipe/add" className="btn-primary inline-block">
+              <Link href="/recipe/add" className="bg-primary-500 text-white font-bold text-sm px-6 py-3 rounded-full shadow-lg inline-block">
                 Add Your First Recipe
               </Link>
             </div>
@@ -215,7 +249,7 @@ export default function SearchPage() {
 
           {query && (
             <div className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-xs text-gray-400">
                 {results.length} result{results.length !== 1 ? "s" : ""} for &quot;{query}&quot;
               </p>
 
@@ -233,9 +267,9 @@ export default function SearchPage() {
                     <Link
                       key={recipe.id}
                       href={`/recipe/${recipe.id}`}
-                      className="flex gap-4 p-3 bg-white rounded-xl shadow-sm"
+                      className="flex gap-4 p-4 bg-white rounded-2xl shadow-sm"
                     >
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                      <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
                         {recipe.image ? (
                           <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
                         ) : (
@@ -243,13 +277,15 @@ export default function SearchPage() {
                         )}
                       </div>
                       <div className="flex-1 flex flex-col justify-center">
-                        <h3 className="font-semibold text-gray-900">{recipe.title}</h3>
-                        <p className="text-sm text-gray-500">by {recipe.author}</p>
+                        <h3 className="font-bold text-gray-900">{recipe.title}</h3>
+                        <p className="text-xs text-gray-400">by {recipe.author}</p>
                         {recipe.tags?.length > 0 && (
                           <div className="flex gap-1 mt-1">
-                            {recipe.tags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                #{tag}
+                            {recipe.tags.slice(0, 3).map((tag, i) => (
+                              <span key={tag} className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                i % 2 === 0 ? "text-primary-500 bg-primary-50" : "text-secondary-500 bg-secondary-50"
+                              }`}>
+                                {tag}
                               </span>
                             ))}
                           </div>
@@ -280,7 +316,7 @@ export default function SearchPage() {
           )}
 
           {query && query.trim().length < 2 && (
-            <p className="text-sm text-gray-500 text-center py-8">Type at least 2 characters to search</p>
+            <p className="text-sm text-gray-400 text-center py-8">Type at least 2 characters to search</p>
           )}
 
           {searchingUsers && (
@@ -291,8 +327,8 @@ export default function SearchPage() {
 
           {query && query.trim().length >= 2 && !searchingUsers && (
             <div className="space-y-4">
-              <p className="text-gray-600">
-                {userResults.length} result{userResults.length !== 1 ? "s" : ""} for &quot;{query}&quot;
+              <p className="text-xs text-gray-400">
+                {userResults.length} people found
               </p>
 
               {userResults.length === 0 ? (
@@ -304,30 +340,48 @@ export default function SearchPage() {
                   <p className="text-gray-600">Try a different name or check the spelling</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {userResults.map((user) => (
-                    <Link
-                      key={user.id}
-                      href={`/profile/${user.id}`}
-                      className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm"
-                    >
-                      <div className="w-12 h-12 bg-linear-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center overflow-hidden shrink-0">
-                        {user.profile_image ? (
-                          <img src={user.profile_image} alt={user.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-semibold text-lg">
-                            {user.name?.charAt(0) || "?"}
-                          </span>
-                        )}
+                <div className="space-y-3">
+                  {userResults.map((user) => {
+                    const isFollowing = followingIds.has(user.id);
+                    return (
+                      <div
+                        key={user.id}
+                        className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
+                      >
+                        <Link
+                          href={`/profile/${user.id}`}
+                          className="w-12 h-12 bg-linear-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+                        >
+                          {user.profile_image ? (
+                            <img src={user.profile_image} alt={user.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white font-bold text-lg">
+                              {user.name?.charAt(0) || "?"}
+                            </span>
+                          )}
+                        </Link>
+                        <Link href={`/profile/${user.id}`} className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
+                          {user.email && (
+                            <p className="text-xs text-gray-400 truncate">@{user.email.split("@")[0]}</p>
+                          )}
+                          <p className="text-[10px] text-gray-500 mt-0.5">
+                            {user.recipe_count ?? 0} recipes &bull; {user.follower_count ?? 0} followers
+                          </p>
+                        </Link>
+                        <button
+                          onClick={() => handleFollow(user.id)}
+                          className={`text-xs font-bold px-4 py-1.5 rounded-full shrink-0 ${
+                            isFollowing
+                              ? "bg-secondary-500 text-white"
+                              : "bg-primary-500 text-white"
+                          }`}
+                        >
+                          {isFollowing ? "Following" : "Follow"}
+                        </button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{user.name}</p>
-                      </div>
-                      <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

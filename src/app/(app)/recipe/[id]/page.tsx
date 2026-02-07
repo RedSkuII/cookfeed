@@ -439,20 +439,25 @@ export default function RecipeDetailPage({
       {/* Recipe Content */}
       <div className="px-4 py-6">
         {/* Title & Author */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{recipe.title}</h1>
+        <h1 className="text-xl font-black text-gray-900 mb-1">{recipe.title}</h1>
         
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-9 h-9 bg-linear-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden">
             {recipe.author_image ? (
               <img src={recipe.author_image} alt={recipe.author} className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-semibold">{recipe.author?.charAt(0) || "?"}</span>
             )}
           </div>
-          <div>
-            <p className="font-medium text-gray-900">{recipe.author}</p>
-            <p className="text-sm text-gray-600">{new Date(recipe.created_at).toLocaleDateString()}</p>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-gray-900">{recipe.author}</p>
+            <p className="text-xs text-gray-400">{new Date(recipe.created_at).toLocaleDateString()}</p>
           </div>
+          {!isOwner && session?.user?.id && (
+            <button className="text-xs font-bold text-white bg-primary-500 px-4 py-1.5 rounded-full">
+              Follow
+            </button>
+          )}
         </div>
 
         {/* Description */}
@@ -472,7 +477,7 @@ export default function RecipeDetailPage({
         )}
 
         {/* Actions */}
-        <div className="flex gap-4 py-4 border-t border-b border-gray-200 mb-6">
+        <div className="flex items-center gap-4 py-3 border-y border-primary-100 mb-5">
           <button 
             onClick={toggleLike}
             className={`flex items-center gap-2 ${isLiked ? "text-red-500" : "text-gray-700"}`}
@@ -518,7 +523,7 @@ export default function RecipeDetailPage({
         {/* Ingredients */}
         {recipe.ingredients && (
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Ingredients</h2>
+            <h2 className="text-base font-extrabold text-gray-900 mb-3">Ingredients</h2>
             <ul className="space-y-3">
               {parseList(recipe.ingredients).map((ingredient, index) => (
                 <li key={index} className="flex items-start gap-3">
@@ -535,7 +540,7 @@ export default function RecipeDetailPage({
         {/* Steps */}
         {recipe.instructions && (
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Steps</h2>
+            <h2 className="text-base font-extrabold text-gray-900 mb-3">Steps</h2>
             <ol className="space-y-4">
               {parseList(recipe.instructions).map((step, index) => (
                 <li key={index} className="flex gap-4">
@@ -552,10 +557,10 @@ export default function RecipeDetailPage({
         {/* "I Made This" Button */}
         <button 
           onClick={handleMadeThis}
-          className={`w-full mb-6 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
-            madeThis 
-              ? "bg-green-500 text-white" 
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          className={`w-full mb-6 py-3.5 px-4 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-lg ${
+            madeThis
+              ? "bg-green-500 text-white"
+              : "bg-secondary-500 text-white hover:bg-secondary-600"
           }`}
         >
           <span className="text-xl">{madeThis ? "✅" : "👨‍🍳"}</span>
@@ -564,7 +569,7 @@ export default function RecipeDetailPage({
 
         {/* Comments Section */}
         <div id="comments-section" className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Comments ({comments.length})</h2>
+          <h2 className="text-base font-extrabold text-gray-900 mb-4">Comments ({comments.length})</h2>
           
           {/* Add Comment - only show if comments are allowed */}
           {allowComments ? (

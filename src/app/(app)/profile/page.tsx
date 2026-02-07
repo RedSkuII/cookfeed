@@ -131,22 +131,38 @@ export default function ProfilePage() {
     return "owner_name" in recipe;
   }
 
+  const handleShare = async () => {
+    const url = window.location.origin + `/profile/${session?.user?.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${profile.name || session?.user?.name}'s CookFeed`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch {
+      // cancelled
+    }
+  };
+
   return (
     <main className="px-4 pt-4 pb-20">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <Link href="/settings" className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      {/* Top Nav */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="w-10" />
+        <span className="text-base font-extrabold text-gray-900">
+          {profile.name || session?.user?.name || "Profile"}
+        </span>
+        <Link href="/settings" className="w-10 h-10 flex items-center justify-center">
+          <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
         </Link>
       </div>
 
-      {/* Profile Info */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-20 h-20 bg-linear-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center overflow-hidden">
+      {/* Avatar + Name (Centered) */}
+      <div className="text-center mb-5">
+        <div className="w-20 h-20 rounded-full bg-linear-to-br from-primary-400 to-secondary-500 mx-auto mb-3 ring-4 ring-white shadow-md overflow-hidden flex items-center justify-center">
           {profile.profileImage ? (
             <img src={profile.profileImage} alt="Profile" className="w-full h-full object-cover" />
           ) : session?.user?.image ? (
@@ -157,36 +173,41 @@ export default function ProfilePage() {
             </span>
           )}
         </div>
-        <div className="flex-1 flex justify-around">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{recipes.length + sharedRecipes.length}</p>
-            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Recipes</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{followerCount}</p>
-            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Followers</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{followingCount}</p>
-            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Following</p>
-          </div>
+        <h2 className="text-lg font-black text-gray-900">{profile.name || session?.user?.name || "User"}</h2>
+        <p className="text-xs text-gray-400 mt-0.5">{profile.bio || session?.user?.email || "No bio yet"}</p>
+      </div>
+
+      {/* Stats Row (Centered) */}
+      <div className="flex justify-center gap-10 mb-5">
+        <div className="text-center">
+          <p className="text-xl font-black text-gray-900">{recipes.length + sharedRecipes.length}</p>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Recipes</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-black text-gray-900">{followerCount}</p>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Followers</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-black text-gray-900">{followingCount}</p>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Following</p>
         </div>
       </div>
 
-      {/* Name & Bio */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">{profile.name || session?.user?.name || "User"}</h2>
-        <p className="text-gray-600">{session?.user?.email}</p>
-        <p className="text-gray-600 mt-2">{profile.bio || "No bio yet"}</p>
+      {/* Action Buttons */}
+      <div className="flex gap-3 mb-6">
+        <Link
+          href="/profile/edit"
+          className="flex-1 bg-primary-500 text-white text-sm font-bold py-2.5 rounded-full text-center"
+        >
+          Edit Profile
+        </Link>
+        <button
+          onClick={handleShare}
+          className="flex-1 border-2 border-primary-500 text-primary-500 text-sm font-bold py-2.5 rounded-full"
+        >
+          Share
+        </button>
       </div>
-
-      {/* Edit Profile Button */}
-      <Link
-        href="/profile/edit"
-        className="block w-full py-2 text-center border-2 border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-4"
-      >
-        Edit Profile
-      </Link>
 
       {/* Search Bar */}
       <div className="relative mb-3">
@@ -195,10 +216,10 @@ export default function ProfilePage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search recipes..."
-          className="w-full px-4 py-2.5 pl-10 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full px-4 py-2.5 pl-10 bg-white rounded-full text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm"
         />
         <svg
-          className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+          className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -209,7 +230,7 @@ export default function ProfilePage() {
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -224,10 +245,10 @@ export default function ProfilePage() {
           <button
             key={tag}
             onClick={() => setSelectedTag(tag)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+            className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors shrink-0 ${
               selectedTag === tag
                 ? "bg-primary-500 text-white"
-                : "bg-gray-100 text-gray-600"
+                : "bg-white text-gray-600 shadow-sm"
             }`}
           >
             {tag}
@@ -236,7 +257,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Tabs */}
-      <div className="flex border-b-2 border-gray-200 mb-0">
+      <div className="flex border-b-2 border-primary-100 mb-0">
         {([
           { key: "all" as const, label: "All", count: allCount },
           { key: "mine" as const, label: "Mine", count: mineCount },
@@ -249,10 +270,10 @@ export default function ProfilePage() {
               setActiveTab(tab.key);
               if (tab.key !== "mine") setMineSubFilter("all");
             }}
-            className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
+            className={`flex-1 py-2.5 text-center text-sm border-b-2 -mb-[2px] transition-colors ${
               activeTab === tab.key
-                ? "text-primary-500 border-primary-500"
-                : "text-gray-500 border-transparent"
+                ? "text-primary-500 border-primary-500 font-bold"
+                : "text-gray-400 border-transparent font-semibold"
             }`}
           >
             {tab.label}
@@ -276,10 +297,10 @@ export default function ProfilePage() {
             <button
               key={sub.key}
               onClick={() => setMineSubFilter(sub.key)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${
                 mineSubFilter === sub.key
                   ? "bg-primary-500 text-white"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-white text-gray-600 shadow-sm"
               }`}
             >
               {sub.label} ({sub.count})
@@ -317,7 +338,7 @@ export default function ProfilePage() {
               <Link
                 key={recipe.id}
                 href={`/recipe/${recipe.id}`}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+                className="flex items-center gap-3 p-3 bg-white rounded-2xl shadow-sm"
               >
                 <div className="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                   {recipe.image ? (
@@ -327,8 +348,8 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{recipe.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-sm font-bold text-gray-900 truncate">{recipe.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
                     Shared by {recipe.owner_name || "Unknown"}
                   </p>
                   <div className="flex gap-1 mt-1">
@@ -380,11 +401,11 @@ export default function ProfilePage() {
           </p>
           {!searchQuery && selectedTag === "All" && (
             activeTab === "made" ? (
-              <Link href="/feed" className="btn-primary inline-block">
+              <Link href="/feed" className="bg-primary-500 text-white font-bold text-sm px-6 py-3 rounded-full shadow-lg inline-block">
                 Browse Recipes
               </Link>
             ) : (
-              <Link href="/recipe/add" className="btn-primary inline-block">
+              <Link href="/recipe/add" className="bg-primary-500 text-white font-bold text-sm px-6 py-3 rounded-full shadow-lg inline-block">
                 Add Your First Recipe
               </Link>
             )
@@ -392,12 +413,12 @@ export default function ProfilePage() {
         </div>
       ) : (
         /* Recipe Grid */
-        <div className="grid grid-cols-3 gap-1 mt-1">
+        <div className="grid grid-cols-3 gap-1.5 mt-1">
           {displayRecipes.map((recipe) => (
             <Link
               key={recipe.id}
               href={`/recipe/${recipe.id}`}
-              className="aspect-square bg-gray-200 relative overflow-hidden"
+              className="aspect-square bg-gray-200 relative overflow-hidden rounded-xl"
             >
               {recipe.image ? (
                 <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover" />
@@ -432,7 +453,7 @@ export default function ProfilePage() {
 
       {/* Results count when searching */}
       {(searchQuery || selectedTag !== "All") && !loading && (
-        <div className="text-center py-3 text-xs text-gray-500">
+        <div className="text-center py-3 text-xs text-gray-400">
           {activeTab === "shared" ? sharedFiltered.length : displayRecipes.length} result{(activeTab === "shared" ? sharedFiltered.length : displayRecipes.length) !== 1 ? "s" : ""}
           {searchQuery ? ` for "${searchQuery}"` : ""}
           {selectedTag !== "All" ? ` in ${selectedTag}` : ""}
