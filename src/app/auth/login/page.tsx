@@ -43,7 +43,8 @@ function LoginForm() {
     try {
       await signInWithGoogle();
     } catch {
-      setError("Failed to sign in with Google");
+      // The redirect to Google OAuth can cause this catch to fire briefly.
+      // Real OAuth errors redirect back with ?error= in URL, handled by urlError above.
       setIsLoading(false);
     }
   };
