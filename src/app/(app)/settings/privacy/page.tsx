@@ -9,6 +9,7 @@ interface PrivacySettings {
   allow_comments: boolean;
   show_favorites: boolean;
   show_followers: boolean;
+  show_followers_list: boolean;
   show_email: boolean;
   searchable: boolean;
 }
@@ -20,6 +21,7 @@ export default function PrivacySettingsPage() {
     allow_comments: true,
     show_favorites: false,
     show_followers: true,
+    show_followers_list: false,
     show_email: false,
     searchable: true,
   });
@@ -39,6 +41,7 @@ export default function PrivacySettingsPage() {
             allow_comments: data.allow_comments ?? true,
             show_favorites: data.show_favorites ?? false,
             show_followers: data.show_followers ?? true,
+            show_followers_list: data.show_followers_list ?? false,
             show_email: data.show_email ?? false,
             searchable: data.searchable ?? true,
           });
@@ -244,6 +247,25 @@ export default function PrivacySettingsPage() {
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
                     settings.show_followers ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4">
+              <div>
+                <p className="font-medium text-gray-900">Show Followers List</p>
+                <p className="text-sm text-gray-500">Let others see who follows you and who you follow</p>
+              </div>
+              <button
+                onClick={() => updateSetting("show_followers_list")}
+                className={`relative w-12 h-7 rounded-full transition-colors ${
+                  settings.show_followers_list ? "bg-orange-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.show_followers_list ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>

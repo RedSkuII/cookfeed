@@ -35,6 +35,8 @@ export async function GET() {
       `CREATE INDEX IF NOT EXISTS idx_recipe_editors_user_id ON recipe_editors(user_id)`,
       // Add searchable column to user_preferences
       `ALTER TABLE user_preferences ADD COLUMN searchable INTEGER DEFAULT 1`,
+      // Add show_followers_list column to user_preferences (default OFF)
+      `ALTER TABLE user_preferences ADD COLUMN show_followers_list INTEGER DEFAULT 0`,
     ];
 
     const results: { migration: string; status: string }[] = [];

@@ -183,14 +183,14 @@ export default function ProfilePage() {
           <p className="text-xl font-black text-gray-900">{recipes.length + sharedRecipes.length}</p>
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Recipes</p>
         </div>
-        <div className="text-center">
+        <Link href={`/profile/${session?.user?.id}/followers`} className="text-center">
           <p className="text-xl font-black text-gray-900">{followerCount}</p>
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Followers</p>
-        </div>
-        <div className="text-center">
+        </Link>
+        <Link href={`/profile/${session?.user?.id}/following`} className="text-center">
           <p className="text-xl font-black text-gray-900">{followingCount}</p>
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Following</p>
-        </div>
+        </Link>
       </div>
 
       {/* Action Buttons */}

@@ -156,6 +156,7 @@ export const schema = `
     allow_comments INTEGER DEFAULT 1,
     show_favorites INTEGER DEFAULT 0,
     show_followers INTEGER DEFAULT 1,
+    show_followers_list INTEGER DEFAULT 0,
     show_email INTEGER DEFAULT 0,
     searchable INTEGER DEFAULT 1,
     last_active TEXT DEFAULT (datetime('now')),

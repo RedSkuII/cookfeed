@@ -39,6 +39,7 @@ export async function GET(
       show_favorites: 0,
       show_email: 0,
       allow_comments: 1,
+      show_followers_list: 0,
       last_active: null,
     };
 
@@ -159,6 +160,7 @@ export async function GET(
         show_favorites: Boolean(prefs.show_favorites),
         show_email: Boolean(prefs.show_email),
         allow_comments: Boolean(prefs.allow_comments),
+        show_followers_list: Boolean(prefs.show_followers_list),
       } : null,
     });
   } catch (error) {

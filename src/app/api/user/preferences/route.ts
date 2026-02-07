@@ -29,6 +29,7 @@ export async function GET() {
         allow_comments: true,
         show_favorites: false,
         show_followers: true,
+        show_followers_list: false,
         show_email: false,
         searchable: true,
       });
@@ -47,6 +48,7 @@ export async function GET() {
       allow_comments: Boolean(prefs.allow_comments),
       show_favorites: Boolean(prefs.show_favorites),
       show_followers: Boolean(prefs.show_followers),
+      show_followers_list: Boolean(prefs.show_followers_list),
       show_email: Boolean(prefs.show_email),
       searchable: prefs.searchable !== undefined ? Boolean(prefs.searchable) : true,
     });
@@ -76,9 +78,9 @@ export async function POST(request: Request) {
           user_id, weekly_digest, push_enabled, notify_new_recipes,
           notify_likes, notify_comments, notify_followers,
           profile_public, show_activity, allow_comments,
-          show_favorites, show_followers, show_email, searchable,
+          show_favorites, show_followers, show_followers_list, show_email, searchable,
           last_active, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         ON CONFLICT(user_id) DO UPDATE SET
           weekly_digest = excluded.weekly_digest,
           push_enabled = excluded.push_enabled,
@@ -91,6 +93,7 @@ export async function POST(request: Request) {
           allow_comments = excluded.allow_comments,
           show_favorites = excluded.show_favorites,
           show_followers = excluded.show_followers,
+          show_followers_list = excluded.show_followers_list,
           show_email = excluded.show_email,
           searchable = excluded.searchable,
           last_active = datetime('now'),
@@ -109,6 +112,7 @@ export async function POST(request: Request) {
         preferences.allow_comments ? 1 : 0,
         preferences.show_favorites ? 1 : 0,
         preferences.show_followers ? 1 : 0,
+        preferences.show_followers_list ? 1 : 0,
         preferences.show_email ? 1 : 0,
         preferences.searchable !== undefined ? (preferences.searchable ? 1 : 0) : 1,
       ],

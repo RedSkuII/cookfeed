@@ -296,22 +296,22 @@ export default function PublicProfilePage({
               Recipes
             </p>
           </div>
-          <div className="text-center">
+          <Link href={`/profile/${id}/followers`} className="text-center">
             <p className="text-2xl font-bold text-gray-900">
               {stats?.followers ?? "-"}
             </p>
             <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
               Followers
             </p>
-          </div>
-          <div className="text-center">
+          </Link>
+          <Link href={`/profile/${id}/following`} className="text-center">
             <p className="text-2xl font-bold text-gray-900">
               {stats?.following ?? "-"}
             </p>
             <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
               Following
             </p>
-          </div>
+          </Link>
         </div>
       </div>
 
