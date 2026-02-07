@@ -53,7 +53,7 @@ export default function FeedPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">CookFeed</h1>
-          <p className="text-sm text-gray-500">Discover delicious recipes</p>
+          <p className="text-sm text-gray-600">Discover delicious recipes</p>
         </div>
         <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@ export default function FeedPage() {
             <span className="text-5xl">🍳</span>
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">No recipes yet</h2>
-          <p className="text-gray-500 mb-8 max-w-xs mx-auto">
+          <p className="text-gray-600 mb-8 max-w-xs mx-auto">
             Be the first to share a delicious recipe with the community!
           </p>
           <Link href="/recipe/add" className="btn-primary inline-flex items-center gap-2">
@@ -131,12 +131,12 @@ export default function FeedPage() {
                 )}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {(recipe.tags || []).map((tag) => (
-                    <span key={tag} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                    <span key={tag} className="text-xs bg-primary-50 text-gray-700 px-2 py-1 rounded-full">
                       #{tag}
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center gap-4 text-gray-500 text-sm">
+                <div className="flex items-center gap-4 text-gray-600 text-sm">
                   <span className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

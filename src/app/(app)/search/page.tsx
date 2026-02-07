@@ -138,7 +138,7 @@ export default function SearchPage() {
           className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
             searchTab === "recipes"
               ? "text-primary-500 border-primary-500"
-              : "text-gray-400 border-transparent"
+              : "text-gray-500 border-transparent"
           }`}
         >
           Recipes
@@ -148,7 +148,7 @@ export default function SearchPage() {
           className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
             searchTab === "people"
               ? "text-primary-500 border-primary-500"
-              : "text-gray-400 border-transparent"
+              : "text-gray-500 border-transparent"
           }`}
         >
           People
@@ -200,7 +200,7 @@ export default function SearchPage() {
                 <span className="text-3xl">📝</span>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No recipes to search</h3>
-              <p className="text-gray-500 mb-6">Add some recipes first to search through them</p>
+              <p className="text-gray-600 mb-6">Add some recipes first to search through them</p>
               <Link href="/recipe/add" className="btn-primary inline-block">
                 Add Your First Recipe
               </Link>
@@ -215,7 +215,7 @@ export default function SearchPage() {
 
           {query && (
             <div className="space-y-4">
-              <p className="text-gray-500">
+              <p className="text-gray-600">
                 {results.length} result{results.length !== 1 ? "s" : ""} for &quot;{query}&quot;
               </p>
 
@@ -225,7 +225,7 @@ export default function SearchPage() {
                     <span className="text-3xl">🔍</span>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No recipes found</h3>
-                  <p className="text-gray-500">Try different keywords or browse by category</p>
+                  <p className="text-gray-600">Try different keywords or browse by category</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -275,7 +275,7 @@ export default function SearchPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Find People</h3>
-              <p className="text-gray-500">Search for other users by their name</p>
+              <p className="text-gray-600">Search for other users by their name</p>
             </div>
           )}
 
@@ -291,7 +291,7 @@ export default function SearchPage() {
 
           {query && query.trim().length >= 2 && !searchingUsers && (
             <div className="space-y-4">
-              <p className="text-gray-500">
+              <p className="text-gray-600">
                 {userResults.length} result{userResults.length !== 1 ? "s" : ""} for &quot;{query}&quot;
               </p>
 
@@ -301,16 +301,17 @@ export default function SearchPage() {
                     <span className="text-3xl">🔍</span>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                  <p className="text-gray-500">Try a different name or check the spelling</p>
+                  <p className="text-gray-600">Try a different name or check the spelling</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {userResults.map((user) => (
-                    <div
+                    <Link
                       key={user.id}
+                      href={`/profile/${user.id}`}
                       className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm"
                     >
-                      <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="w-12 h-12 bg-linear-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center overflow-hidden shrink-0">
                         {user.profile_image ? (
                           <img src={user.profile_image} alt={user.name} className="w-full h-full object-cover" />
                         ) : (
@@ -322,7 +323,10 @@ export default function SearchPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 truncate">{user.name}</p>
                       </div>
-                    </div>
+                      <svg className="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
                   ))}
                 </div>
               )}

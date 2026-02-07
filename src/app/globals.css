@@ -29,20 +29,14 @@
 }
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 250, 250, 250;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 26, 26, 26;
+  --background-warm: #FFFBF5;
   color-scheme: light;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: var(--background-warm);
   min-height: 100vh;
 }
 
@@ -73,4 +67,32 @@ body {
 
 .card {
   @apply bg-white rounded-2xl shadow-md overflow-hidden;
+}
+
+/* Print stylesheet for recipe pages */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  nav, .no-print, button, .sticky, #comments-section,
+  [class*="bottom-0"][class*="fixed"] {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ddd;
+  }
+
+  img {
+    max-height: 300px;
+    object-fit: cover;
+  }
 }

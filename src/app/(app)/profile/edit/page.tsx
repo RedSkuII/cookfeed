@@ -16,11 +16,29 @@ export default function EditProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    // Load existing profile data from localStorage or session
-    const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
-    setName(savedProfile.name || session?.user?.name || "");
-    setBio(savedProfile.bio || "");
-    setProfileImage(savedProfile.profileImage || null);
+    // Load profile data from API first, falling back to localStorage
+    async function loadProfile() {
+      try {
+        const res = await fetch("/api/user/profile");
+        if (res.ok) {
+          const data = await res.json();
+          setName(data.name || session?.user?.name || "");
+          setBio(data.bio || "");
+          // Use API profile_image if available, otherwise fall back to localStorage
+          const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
+          setProfileImage(data.profile_image || savedProfile.profileImage || null);
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to load profile from API:", error);
+      }
+      // Fallback to localStorage
+      const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
+      setName(savedProfile.name || session?.user?.name || "");
+      setBio(savedProfile.bio || "");
+      setProfileImage(savedProfile.profileImage || null);
+    }
+    loadProfile();
   }, [session]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,17 +60,32 @@ export default function EditProfilePage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    
-    // Save profile to localStorage (temporary until database is set up)
+
+    try {
+      // Save profile to database via API
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, bio, profile_image: profileImage }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to save profile to API");
+      }
+    } catch (error) {
+      console.error("Failed to save profile to API:", error);
+    }
+
+    // Also save to localStorage as a backup
     const profile = {
       name,
       bio,
       email: session?.user?.email,
       image: session?.user?.image,
-      profileImage: profileImage, // Custom uploaded image
+      profileImage: profileImage,
     };
     localStorage.setItem("cookfeed_profile", JSON.stringify(profile));
-    
+
     setIsSaving(false);
     router.push("/profile");
   };

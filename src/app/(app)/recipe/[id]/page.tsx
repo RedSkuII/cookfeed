@@ -118,7 +118,6 @@ export default function RecipeDetailPage({
     
     loadRecipe();
     loadCollections();
-    loadRecipe();
   }, [id]);
 
   const toggleLike = async () => {
@@ -452,7 +451,7 @@ export default function RecipeDetailPage({
           </div>
           <div>
             <p className="font-medium text-gray-900">{recipe.author}</p>
-            <p className="text-sm text-gray-500">{new Date(recipe.created_at).toLocaleDateString()}</p>
+            <p className="text-sm text-gray-600">{new Date(recipe.created_at).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -505,6 +504,14 @@ export default function RecipeDetailPage({
             {currentCollection && (
               <span className="text-xs text-primary-400">📁 {currentCollection}</span>
             )}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 text-gray-700 hover:text-primary-500 transition-colors no-print"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
           </button>
         </div>
 
@@ -580,13 +587,13 @@ export default function RecipeDetailPage({
             </div>
           ) : (
             <div className="mb-4 p-3 bg-gray-100 rounded-xl text-center">
-              <p className="text-gray-500">Comments are disabled for this recipe</p>
+              <p className="text-gray-600">Comments are disabled for this recipe</p>
             </div>
           )}
           
           {/* Comments List */}
           {comments.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">{allowComments ? "No comments yet. Be the first to comment!" : "No comments"}</p>
+            <p className="text-gray-600 text-center py-4">{allowComments ? "No comments yet. Be the first to comment!" : "No comments"}</p>
           ) : (
             <div className="space-y-3">
               {comments.map((comment) => (

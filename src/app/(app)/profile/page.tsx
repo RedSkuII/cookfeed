@@ -37,6 +37,8 @@ export default function ProfilePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState("All");
   const [profile, setProfile] = useState<{ name?: string; bio?: string; profileImage?: string }>({});
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     async function loadData() {
@@ -58,8 +60,27 @@ export default function ProfilePage() {
     const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
     setProfile(savedProfile);
 
+    async function loadFollowers() {
+      if (session?.user?.id) {
+        try {
+          const profileRes = await fetch(`/api/users/${session.user.id}`);
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            setFollowerCount(profileData.stats?.followers ?? 0);
+            setFollowingCount(profileData.stats?.following ?? 0);
+            if (profileData.user?.name) {
+              setProfile(prev => ({ ...prev, name: profileData.user.name, bio: profileData.user.bio || prev.bio }));
+            }
+          }
+        } catch {
+          // Fallback to local data
+        }
+      }
+    }
+
     loadData();
-  }, []);
+    loadFollowers();
+  }, [session?.user?.id]);
 
   // Generic filter helper: search by title + filter by tag
   function applyFilters<T extends Recipe>(list: T[]): T[] {
@@ -138,16 +159,16 @@ export default function ProfilePage() {
         </div>
         <div className="flex-1 flex justify-around">
           <div className="text-center">
-            <p className="text-xl font-bold text-gray-900">{recipes.length + sharedRecipes.length}</p>
-            <p className="text-sm text-gray-500">Recipes</p>
+            <p className="text-2xl font-bold text-gray-900">{recipes.length + sharedRecipes.length}</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Recipes</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-gray-900">0</p>
-            <p className="text-sm text-gray-500">Followers</p>
+            <p className="text-2xl font-bold text-gray-900">{followerCount}</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Followers</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-gray-900">0</p>
-            <p className="text-sm text-gray-500">Following</p>
+            <p className="text-2xl font-bold text-gray-900">{followingCount}</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Following</p>
           </div>
         </div>
       </div>
@@ -156,7 +177,7 @@ export default function ProfilePage() {
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-gray-900">{profile.name || session?.user?.name || "User"}</h2>
         <p className="text-gray-600">{session?.user?.email}</p>
-        <p className="text-gray-500 mt-2 italic">{profile.bio || "No bio yet"}</p>
+        <p className="text-gray-600 mt-2">{profile.bio || "No bio yet"}</p>
       </div>
 
       {/* Edit Profile Button */}
@@ -206,7 +227,7 @@ export default function ProfilePage() {
             className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
               selectedTag === tag
                 ? "bg-primary-500 text-white"
-                : "bg-gray-100 text-gray-500"
+                : "bg-gray-100 text-gray-600"
             }`}
           >
             {tag}
@@ -231,7 +252,7 @@ export default function ProfilePage() {
             className={`flex-1 py-2.5 text-center text-sm font-semibold border-b-2 -mb-[2px] transition-colors ${
               activeTab === tab.key
                 ? "text-primary-500 border-primary-500"
-                : "text-gray-400 border-transparent"
+                : "text-gray-500 border-transparent"
             }`}
           >
             {tab.label}
@@ -258,7 +279,7 @@ export default function ProfilePage() {
               className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                 mineSubFilter === sub.key
                   ? "bg-primary-500 text-white"
-                  : "bg-gray-100 text-gray-500"
+                  : "bg-gray-100 text-gray-600"
               }`}
             >
               {sub.label} ({sub.count})
@@ -411,7 +432,7 @@ export default function ProfilePage() {
 
       {/* Results count when searching */}
       {(searchQuery || selectedTag !== "All") && !loading && (
-        <div className="text-center py-3 text-xs text-gray-400">
+        <div className="text-center py-3 text-xs text-gray-500">
           {activeTab === "shared" ? sharedFiltered.length : displayRecipes.length} result{(activeTab === "shared" ? sharedFiltered.length : displayRecipes.length) !== 1 ? "s" : ""}
           {searchQuery ? ` for "${searchQuery}"` : ""}
           {selectedTag !== "All" ? ` in ${selectedTag}` : ""}
