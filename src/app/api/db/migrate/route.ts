@@ -33,6 +33,8 @@ export async function GET() {
       )`,
       `CREATE INDEX IF NOT EXISTS idx_recipe_editors_recipe_id ON recipe_editors(recipe_id)`,
       `CREATE INDEX IF NOT EXISTS idx_recipe_editors_user_id ON recipe_editors(user_id)`,
+      // Add searchable column to user_preferences
+      `ALTER TABLE user_preferences ADD COLUMN searchable INTEGER DEFAULT 1`,
     ];
 
     const results: { migration: string; status: string }[] = [];

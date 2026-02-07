@@ -19,8 +19,10 @@ export async function GET(request: Request) {
   try {
     const db = getDb();
     const result = await db.execute({
-      sql: `SELECT id, name, profile_image FROM users
-            WHERE name LIKE ? AND id != ?
+      sql: `SELECT u.id, u.name, u.profile_image FROM users u
+            LEFT JOIN user_preferences p ON u.id = p.user_id
+            WHERE u.name LIKE ? AND u.id != ?
+              AND (p.searchable IS NULL OR p.searchable = 1)
             LIMIT 10`,
       args: [`%${q.trim()}%`, session.user.id],
     });

@@ -10,6 +10,7 @@ interface PrivacySettings {
   show_favorites: boolean;
   show_followers: boolean;
   show_email: boolean;
+  searchable: boolean;
 }
 
 export default function PrivacySettingsPage() {
@@ -20,6 +21,7 @@ export default function PrivacySettingsPage() {
     show_favorites: false,
     show_followers: true,
     show_email: false,
+    searchable: true,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,6 +40,7 @@ export default function PrivacySettingsPage() {
             show_favorites: data.show_favorites ?? false,
             show_followers: data.show_followers ?? true,
             show_email: data.show_email ?? false,
+            searchable: data.searchable ?? true,
           });
         }
       } catch (error) {
@@ -159,6 +162,25 @@ export default function PrivacySettingsPage() {
                 <span
                   className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
                     settings.show_email ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4">
+              <div>
+                <p className="font-medium text-gray-900">Searchable by Name</p>
+                <p className="text-sm text-gray-500">Allow other users to find you by searching your name</p>
+              </div>
+              <button
+                onClick={() => updateSetting("searchable")}
+                className={`relative w-12 h-7 rounded-full transition-colors ${
+                  settings.searchable ? "bg-orange-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    settings.searchable ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
