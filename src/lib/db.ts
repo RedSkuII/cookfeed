@@ -195,10 +195,22 @@ export const schema = `
   CREATE INDEX IF NOT EXISTS idx_recipe_editors_user_id ON recipe_editors(user_id);
 `;
 
+// Migrations: ALTER TABLE statements for columns that may be missing
+// from earlier schema versions. Each is run individually with error
+// handling so failures (column already exists) are silently ignored.
+const migrations = [
+  "ALTER TABLE user_preferences ADD COLUMN show_followers_list INTEGER DEFAULT 0",
+  "ALTER TABLE user_preferences ADD COLUMN show_email INTEGER DEFAULT 0",
+  "ALTER TABLE user_preferences ADD COLUMN searchable INTEGER DEFAULT 1",
+  "ALTER TABLE user_preferences ADD COLUMN color_theme TEXT DEFAULT 'default'",
+  "ALTER TABLE user_preferences ADD COLUMN last_active TEXT DEFAULT (datetime('now'))",
+  "ALTER TABLE user_preferences ADD COLUMN updated_at TEXT DEFAULT (datetime('now'))",
+];
+
 // Initialize database schema
 export async function initializeDatabase() {
   const client = getDb();
-  
+
   // Split schema into individual statements and execute
   const statements = schema
     .split(";")
@@ -207,6 +219,15 @@ export async function initializeDatabase() {
 
   for (const statement of statements) {
     await client.execute(statement);
+  }
+
+  // Run migrations to add any columns missing from older table versions
+  for (const migration of migrations) {
+    try {
+      await client.execute(migration);
+    } catch {
+      // Column already exists — ignore
+    }
   }
 
   console.log("Database schema initialized successfully");

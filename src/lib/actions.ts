@@ -2,16 +2,16 @@
 
 import { signIn, signOut } from "@/lib/auth";
 
-export async function signInWithGoogle() {
-  await signIn("google", { redirectTo: "/feed" });
+export async function signInWithGoogle(callbackUrl?: string) {
+  await signIn("google", { redirectTo: callbackUrl || "/feed" });
 }
 
-export async function signInWithCredentials(email: string, password: string) {
+export async function signInWithCredentials(email: string, password: string, callbackUrl?: string) {
   try {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/feed",
+      redirectTo: callbackUrl || "/feed",
     });
     return { success: true };
   } catch (error) {

@@ -15,6 +15,7 @@ function LoginForm() {
 
   // Check for error in URL on mount
   const urlError = searchParams.get("error");
+  const callbackUrl = searchParams.get("callbackUrl") || "/feed";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,16 +23,16 @@ function LoginForm() {
     setError("");
 
     try {
-      const result = await signInWithCredentials(email, password);
-      
+      const result = await signInWithCredentials(email, password, callbackUrl);
+
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/feed");
+        router.push(callbackUrl);
       }
     } catch {
       // If redirect happens, this catch will trigger but that's OK
-      router.push("/feed");
+      router.push(callbackUrl);
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +42,7 @@ function LoginForm() {
     setIsLoading(true);
     setError("");
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(callbackUrl);
     } catch {
       // The redirect to Google OAuth can cause this catch to fire briefly.
       // Real OAuth errors redirect back with ?error= in URL, handled by urlError above.

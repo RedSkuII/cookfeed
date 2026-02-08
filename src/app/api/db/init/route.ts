@@ -4,7 +4,10 @@ import { initializeDatabase } from '@/lib/db';
 export async function GET() {
   try {
     await initializeDatabase();
-    return NextResponse.json({ success: true, message: 'Database initialized successfully' });
+    return NextResponse.json({
+      success: true,
+      message: 'Database initialized successfully (tables created + migrations applied)',
+    });
   } catch (error) {
     console.error('Database initialization error:', error);
     return NextResponse.json(
@@ -17,7 +20,10 @@ export async function GET() {
 export async function POST() {
   try {
     await initializeDatabase();
-    return NextResponse.json({ success: true, message: 'Database initialized successfully' });
+    return NextResponse.json({
+      success: true,
+      message: 'Database initialized successfully (tables created + migrations applied)',
+    });
   } catch (error) {
     console.error('Database initialization error:', error);
     return NextResponse.json(
