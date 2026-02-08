@@ -113,14 +113,14 @@ export default function PrivacySettingsPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Profile Visibility</h2>
           <div className="bg-white rounded-xl overflow-hidden divide-y divide-gray-100">
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Public Profile</p>
                 <p className="text-sm text-gray-500">Anyone can view your profile and public recipes. When off, only you can see your profile.</p>
               </div>
               <button
                 onClick={() => updateSetting("profile_public")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.profile_public ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -132,14 +132,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Show Activity Status</p>
                 <p className="text-sm text-gray-500">Let others see when you were last active on your profile</p>
               </div>
               <button
                 onClick={() => updateSetting("show_activity")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.show_activity ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -151,14 +151,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Show Email Address</p>
                 <p className="text-sm text-gray-500">Display your email on your public profile</p>
               </div>
               <button
                 onClick={() => updateSetting("show_email")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.show_email ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -170,14 +170,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Searchable by Name</p>
                 <p className="text-sm text-gray-500">Allow other users to find you by searching your name</p>
               </div>
               <button
                 onClick={() => updateSetting("searchable")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.searchable ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -195,14 +195,14 @@ export default function PrivacySettingsPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Interactions</h2>
           <div className="bg-white rounded-xl overflow-hidden divide-y divide-gray-100">
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Allow Comments</p>
                 <p className="text-sm text-gray-500">Let others comment on your recipes</p>
               </div>
               <button
                 onClick={() => updateSetting("allow_comments")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.allow_comments ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -214,14 +214,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Show Favorites</p>
                 <p className="text-sm text-gray-500">Let others see your public saved collections. You can also set individual collections as private.</p>
               </div>
               <button
                 onClick={() => updateSetting("show_favorites")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.show_favorites ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -233,14 +233,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Show Followers</p>
                 <p className="text-sm text-gray-500">Display your follower and following counts on your profile</p>
               </div>
               <button
                 onClick={() => updateSetting("show_followers")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.show_followers ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -252,14 +252,14 @@ export default function PrivacySettingsPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Show Followers List</p>
                 <p className="text-sm text-gray-500">Let others see who follows you and who you follow</p>
               </div>
               <button
                 onClick={() => updateSetting("show_followers_list")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.show_followers_list ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >

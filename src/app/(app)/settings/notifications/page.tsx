@@ -107,14 +107,14 @@ export default function NotificationsSettingsPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Push Notifications</h2>
           <div className="bg-white rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Enable Push Notifications</p>
                 <p className="text-sm text-gray-500">Receive notifications on your device</p>
               </div>
               <button
                 onClick={() => updateSetting("push_enabled")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.push_enabled ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -132,14 +132,14 @@ export default function NotificationsSettingsPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Activity</h2>
           <div className="bg-white rounded-xl overflow-hidden divide-y divide-gray-100">
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">New Recipes</p>
                 <p className="text-sm text-gray-500">When people you follow post new recipes</p>
               </div>
               <button
                 onClick={() => updateSetting("notify_new_recipes")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.notify_new_recipes ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -151,14 +151,14 @@ export default function NotificationsSettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Likes</p>
                 <p className="text-sm text-gray-500">When someone likes your recipe</p>
               </div>
               <button
                 onClick={() => updateSetting("notify_likes")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.notify_likes ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -170,14 +170,14 @@ export default function NotificationsSettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Comments</p>
                 <p className="text-sm text-gray-500">When someone comments on your recipe</p>
               </div>
               <button
                 onClick={() => updateSetting("notify_comments")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.notify_comments ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -189,14 +189,14 @@ export default function NotificationsSettingsPage() {
               </button>
             </div>
             
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">New Followers</p>
                 <p className="text-sm text-gray-500">When someone starts following you</p>
               </div>
               <button
                 onClick={() => updateSetting("notify_followers")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.notify_followers ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >
@@ -214,14 +214,14 @@ export default function NotificationsSettingsPage() {
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Email</h2>
           <div className="bg-white rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4">
-              <div>
+            <div className="flex items-center justify-between p-4 gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">Weekly Digest</p>
                 <p className="text-sm text-gray-500">Get a summary of trending recipes every week</p>
               </div>
               <button
                 onClick={() => updateSetting("weekly_digest")}
-                className={`relative w-12 h-7 rounded-full transition-colors ${
+                className={`relative w-12 h-7 shrink-0 rounded-full overflow-hidden transition-colors ${
                   settings.weekly_digest ? "bg-orange-500" : "bg-gray-300"
                 }`}
               >

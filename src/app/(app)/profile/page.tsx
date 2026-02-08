@@ -39,6 +39,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<{ name?: string; bio?: string; profileImage?: string }>({});
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [showEmail, setShowEmail] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -71,6 +73,9 @@ export default function ProfilePage() {
             if (profileData.user?.name) {
               setProfile(prev => ({ ...prev, name: profileData.user.name, bio: profileData.user.bio || prev.bio }));
             }
+            if (profileData.user?.email) {
+              setUserEmail(profileData.user.email);
+            }
           }
         } catch {
           // Fallback to local data
@@ -78,8 +83,21 @@ export default function ProfilePage() {
       }
     }
 
+    async function loadPreferences() {
+      try {
+        const res = await fetch("/api/user/preferences");
+        if (res.ok) {
+          const data = await res.json();
+          setShowEmail(data.show_email ?? false);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     loadData();
     loadFollowers();
+    loadPreferences();
   }, [session?.user?.id]);
 
   // Generic filter helper: search by title + filter by tag
@@ -174,7 +192,10 @@ export default function ProfilePage() {
           )}
         </div>
         <h2 className="text-lg font-black text-gray-900">{profile.name || session?.user?.name || "User"}</h2>
-        <p className="text-xs text-gray-400 mt-0.5">{profile.bio || session?.user?.email || "No bio yet"}</p>
+        {showEmail && (userEmail || session?.user?.email) && (
+          <p className="text-xs text-primary-500 mt-0.5">{userEmail || session?.user?.email}</p>
+        )}
+        <p className="text-xs text-gray-400 mt-0.5">{profile.bio || "No bio yet"}</p>
       </div>
 
       {/* Stats Row (Centered) */}

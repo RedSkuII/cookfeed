@@ -25,6 +25,7 @@ type Recipe = {
 
 type Comment = {
   id: string;
+  user_id: string;
   user_name: string;
   user_image?: string;
   content: string;
@@ -73,6 +74,10 @@ export default function RecipeDetailPage({
   } | null>(null);
   const [showManageEditors, setShowManageEditors] = useState(false);
   const actionInFlight = useRef(false);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [commentMenuOpen, setCommentMenuOpen] = useState<string | null>(null);
 
   const isOwner = session?.user?.id === recipe?.user_id;
   const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
@@ -125,7 +130,7 @@ export default function RecipeDetailPage({
   }, [id, sessionStatus]);
 
   const toggleLike = async () => {
-    if (!recipe) return;
+    if (!recipe || actionInFlight.current) return;
 
     const wasLiked = isLiked;
     const prevCount = likeCount;
@@ -144,8 +149,13 @@ export default function RecipeDetailPage({
       const res = await fetch(`/api/recipes/${id}/like`, {
         method: wasLiked ? "DELETE" : "POST",
       });
-      if (!res.ok) {
-        // Revert on failure
+      if (res.ok) {
+        const data = await res.json();
+        if (data.likes !== undefined) {
+          setLikeCount(Number(data.likes));
+        }
+      } else if (res.status !== 400) {
+        // Revert on real failures, but not on "Already liked" (400)
         setIsLiked(wasLiked);
         setLikeCount(prevCount);
       }
@@ -274,15 +284,16 @@ export default function RecipeDetailPage({
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim() || !recipe) return;
-    
+    if (!newComment.trim() || !recipe || commentSubmitting) return;
+
+    setCommentSubmitting(true);
     try {
       const res = await fetch(`/api/recipes/${id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: newComment.trim() }),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         setComments([...comments, data.comment]);
@@ -290,7 +301,41 @@ export default function RecipeDetailPage({
       }
     } catch (error) {
       console.error("Failed to add comment:", error);
+    } finally {
+      setCommentSubmitting(false);
     }
+  };
+
+  const handleEditComment = async (commentId: string) => {
+    if (!editContent.trim()) return;
+    try {
+      const res = await fetch(`/api/recipes/${id}/comments?commentId=${commentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: editContent.trim() }),
+      });
+      if (res.ok) {
+        setComments(comments.map(c => c.id === commentId ? { ...c, content: editContent.trim() } : c));
+        setEditingCommentId(null);
+        setEditContent("");
+      }
+    } catch (error) {
+      console.error("Failed to edit comment:", error);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/recipes/${id}/comments?commentId=${commentId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setComments(comments.filter(c => c.id !== commentId));
+      }
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+    }
+    setCommentMenuOpen(null);
   };
 
   if (loading) {
@@ -620,14 +665,14 @@ export default function RecipeDetailPage({
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-                onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+                onKeyDown={(e) => e.key === "Enter" && !commentSubmitting && handleAddComment()}
               />
               <button
                 onClick={handleAddComment}
-                disabled={!newComment.trim()}
+                disabled={!newComment.trim() || commentSubmitting}
                 className="px-4 py-2 bg-primary-500 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Post
+                {commentSubmitting ? "..." : "Post"}
               </button>
             </div>
           ) : (
@@ -641,15 +686,92 @@ export default function RecipeDetailPage({
             <p className="text-gray-600 text-center py-4">{allowComments ? "No comments yet. Be the first to comment!" : "No comments"}</p>
           ) : (
             <div className="space-y-3">
-              {comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900">{comment.user_name}</span>
-                    <span className="text-xs text-gray-500">{new Date(comment.created_at).toLocaleDateString()}</span>
+              {comments.map((comment) => {
+                const isCommentOwner = session?.user?.id === comment.user_id;
+                const canDeleteComment = isCommentOwner || isOwner;
+
+                return (
+                  <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-gray-900">{comment.user_name}</span>
+                      <span className="text-xs text-gray-500">{new Date(comment.created_at).toLocaleDateString()}</span>
+                      {(isCommentOwner || canDeleteComment) && (
+                        <div className="ml-auto relative">
+                          <button
+                            onClick={() => setCommentMenuOpen(commentMenuOpen === comment.id ? null : comment.id)}
+                            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-200 text-gray-400"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="5" r="2" />
+                              <circle cx="12" cy="12" r="2" />
+                              <circle cx="12" cy="19" r="2" />
+                            </svg>
+                          </button>
+                          {commentMenuOpen === comment.id && (
+                            <>
+                              <div className="fixed inset-0 z-10" onClick={() => setCommentMenuOpen(null)} />
+                              <div className="absolute right-0 top-8 w-32 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden z-20">
+                                {isCommentOwner && (
+                                  <button
+                                    onClick={() => {
+                                      setEditingCommentId(comment.id);
+                                      setEditContent(comment.content);
+                                      setCommentMenuOpen(null);
+                                    }}
+                                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit
+                                  </button>
+                                )}
+                                {canDeleteComment && (
+                                  <button
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-gray-50 w-full"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {editingCommentId === comment.id ? (
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          type="text"
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          onKeyDown={(e) => e.key === "Enter" && handleEditComment(comment.id)}
+                        />
+                        <button
+                          onClick={() => handleEditComment(comment.id)}
+                          disabled={!editContent.trim()}
+                          className="px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => { setEditingCommentId(null); setEditContent(""); }}
+                          className="px-3 py-1.5 border border-gray-300 text-gray-600 text-sm rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-gray-700">{comment.content}</p>
+                    )}
                   </div>
-                  <p className="text-gray-700">{comment.content}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

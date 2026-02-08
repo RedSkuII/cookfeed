@@ -73,6 +73,22 @@ export async function POST(request: Request) {
     const preferences = await request.json();
     const db = getDb();
 
+    // Load existing preferences so partial updates don't wipe other fields
+    const existing = await db.execute({
+      sql: `SELECT * FROM user_preferences WHERE user_id = ?`,
+      args: [session.user.id],
+    });
+    const cur = existing.rows[0] as Record<string, unknown> | undefined;
+
+    // Helper: use incoming value if explicitly provided, otherwise keep existing or use default
+    const val = (key: string, fallback: number) => {
+      if (preferences[key] !== undefined) return preferences[key] ? 1 : 0;
+      if (cur && cur[key] !== undefined) return Number(cur[key]);
+      return fallback;
+    };
+
+    const colorTheme = preferences.color_theme ?? (cur?.color_theme as string) ?? 'default';
+
     // Upsert preferences
     await db.execute({
       sql: `
@@ -104,21 +120,21 @@ export async function POST(request: Request) {
       `,
       args: [
         session.user.id,
-        preferences.weekly_digest ? 1 : 0,
-        preferences.push_enabled ? 1 : 0,
-        preferences.notify_new_recipes ? 1 : 0,
-        preferences.notify_likes ? 1 : 0,
-        preferences.notify_comments ? 1 : 0,
-        preferences.notify_followers ? 1 : 0,
-        preferences.profile_public ? 1 : 0,
-        preferences.show_activity ? 1 : 0,
-        preferences.allow_comments ? 1 : 0,
-        preferences.show_favorites ? 1 : 0,
-        preferences.show_followers ? 1 : 0,
-        preferences.show_followers_list ? 1 : 0,
-        preferences.show_email ? 1 : 0,
-        preferences.searchable !== undefined ? (preferences.searchable ? 1 : 0) : 1,
-        preferences.color_theme || 'default',
+        val('weekly_digest', 1),
+        val('push_enabled', 1),
+        val('notify_new_recipes', 1),
+        val('notify_likes', 1),
+        val('notify_comments', 1),
+        val('notify_followers', 1),
+        val('profile_public', 1),
+        val('show_activity', 0),
+        val('allow_comments', 1),
+        val('show_favorites', 0),
+        val('show_followers', 1),
+        val('show_followers_list', 0),
+        val('show_email', 0),
+        val('searchable', 1),
+        colorTheme,
       ],
     });
 
