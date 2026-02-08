@@ -14,7 +14,7 @@ export async function GET(
 
     const result = await db.execute({
       sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
-            (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
+            (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as like_count,
             (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count,
             p.allow_comments
             FROM recipes r

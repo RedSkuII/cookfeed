@@ -6,10 +6,12 @@ import { auth } from "@/lib/auth";
 export async function GET() {
   try {
     const db = getDb();
+    const session = await auth();
+
     const result = await db.execute({
       sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
-            (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
-            (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comments
+            (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as like_count,
+            (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count
             FROM recipes r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.visibility = 'public'
@@ -17,9 +19,22 @@ export async function GET() {
       args: [],
     });
 
+    // Get liked recipe IDs for current user
+    let likedIds = new Set<string>();
+    if (session?.user?.id) {
+      const likedResult = await db.execute({
+        sql: `SELECT recipe_id FROM likes WHERE user_id = ?`,
+        args: [session.user.id],
+      });
+      likedIds = new Set(likedResult.rows.map(r => r.recipe_id as string));
+    }
+
     const recipes = result.rows.map((row) => ({
       ...row,
       tags: JSON.parse((row.tags as string) || "[]"),
+      like_count: Number(row.like_count) || 0,
+      comment_count: Number(row.comment_count) || 0,
+      hasLiked: likedIds.has(row.id as string),
     }));
 
     return NextResponse.json({ recipes });

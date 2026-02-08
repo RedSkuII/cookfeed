@@ -57,19 +57,24 @@ export default function PrivacySettingsPage() {
 
   const updateSetting = async (key: keyof PrivacySettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
+    const prevSettings = { ...settings };
     setSettings(newSettings);
     setSaving(true);
 
     try {
-      await fetch("/api/user/preferences", {
+      const res = await fetch("/api/user/preferences", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newSettings),
       });
+      if (!res.ok) {
+        // API failed — revert toggle
+        setSettings(prevSettings);
+      }
     } catch (error) {
       console.error("Failed to save settings:", error);
       // Revert on error
-      setSettings(settings);
+      setSettings(prevSettings);
     } finally {
       setSaving(false);
     }

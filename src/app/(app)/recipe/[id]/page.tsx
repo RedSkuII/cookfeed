@@ -98,7 +98,7 @@ export default function RecipeDetailPage({
           setEditorPermissions(data.editorPermissions || null);
           // Only update interactive state if no user action is in flight
           if (!actionInFlight.current) {
-            setLikeCount(Number(data.recipe?.likes) || 0);
+            setLikeCount(Number(data.recipe?.like_count) || 0);
             setIsLiked(data.hasLiked || false);
             setMadeThis(data.hasMade || false);
             setIsFavorited(data.isFavorited || false);

@@ -10,8 +10,9 @@ type Recipe = {
   image?: string;
   author: string;
   author_image?: string;
-  likes: number;
-  comments?: number;
+  like_count: number;
+  comment_count: number;
+  hasLiked: boolean;
   tags: string[];
   visibility: string;
   created_at: string;
@@ -155,16 +156,16 @@ export default function FeedPage() {
                 {/* Engagement Row */}
                 <div className="flex items-center gap-5 pt-2 border-t border-gray-100">
                   <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className={`w-4 h-4 ${recipe.hasLiked ? "text-red-500" : "text-gray-400"}`} fill={recipe.hasLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-xs font-semibold text-gray-600">{recipe.likes || 0}</span>
+                    <span className="text-xs font-semibold text-gray-600">{recipe.like_count || 0}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                     </svg>
-                    <span className="text-xs font-semibold text-gray-600">{recipe.comments || 0}</span>
+                    <span className="text-xs font-semibold text-gray-600">{recipe.comment_count || 0}</span>
                   </div>
                   <div className="flex items-center gap-1 ml-auto">
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
