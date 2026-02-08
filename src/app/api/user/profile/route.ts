@@ -11,7 +11,7 @@ export async function GET() {
   try {
     const db = getDb();
     const result = await db.execute({
-      sql: `SELECT name, bio, profile_image FROM users WHERE id = ?`,
+      sql: `SELECT name, bio, profile_image, email FROM users WHERE id = ?`,
       args: [session.user.id],
     });
 
@@ -24,6 +24,7 @@ export async function GET() {
       name: user.name || "",
       bio: user.bio || "",
       profile_image: user.profile_image || null,
+      email: user.email || "",
     });
   } catch (error) {
     console.error("Failed to get user profile:", error);

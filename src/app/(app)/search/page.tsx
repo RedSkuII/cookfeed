@@ -27,13 +27,14 @@ type UserResult = {
 const popularTags = ["Italian", "Mexican", "Asian", "Vegan", "Dessert", "Quick", "Healthy", "Comfort Food"];
 
 export default function SearchPage() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const [query, setQuery] = useState("");
   const [searchTab, setSearchTab] = useState<"recipes" | "people">("recipes");
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [results, setResults] = useState<Recipe[]>([]);
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
+  const [followLoading, setFollowLoading] = useState<string | null>(null);
   const [searchingUsers, setSearchingUsers] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -107,8 +108,9 @@ export default function SearchPage() {
   };
 
   const handleFollow = async (userId: string) => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || followLoading) return;
     const isFollowing = followingIds.has(userId);
+    setFollowLoading(userId);
     try {
       const res = await fetch(`/api/users/${userId}/follow`, {
         method: isFollowing ? "DELETE" : "POST",
@@ -123,6 +125,8 @@ export default function SearchPage() {
       }
     } catch (error) {
       console.error("Failed to toggle follow:", error);
+    } finally {
+      setFollowLoading(null);
     }
   };
 
@@ -369,16 +373,21 @@ export default function SearchPage() {
                             {user.recipe_count ?? 0} recipes &bull; {user.follower_count ?? 0} followers
                           </p>
                         </Link>
-                        <button
-                          onClick={() => handleFollow(user.id)}
-                          className={`text-xs font-bold px-4 py-1.5 rounded-full shrink-0 ${
-                            isFollowing
-                              ? "bg-secondary-500 text-white"
-                              : "bg-primary-500 text-white"
-                          }`}
-                        >
-                          {isFollowing ? "Following" : "Follow"}
-                        </button>
+                        {sessionStatus === "authenticated" && user.id !== session?.user?.id && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleFollow(user.id); }}
+                            disabled={followLoading === user.id}
+                            className={`text-xs font-bold px-4 py-1.5 rounded-full shrink-0 transition-opacity ${
+                              followLoading === user.id ? "opacity-50" : ""
+                            } ${
+                              isFollowing
+                                ? "bg-secondary-500 text-white"
+                                : "bg-primary-500 text-white"
+                            }`}
+                          >
+                            {followLoading === user.id ? "..." : isFollowing ? "Following" : "Follow"}
+                          </button>
+                        )}
                       </div>
                     );
                   })}

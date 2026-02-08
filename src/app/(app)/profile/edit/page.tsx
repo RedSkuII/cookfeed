@@ -12,6 +12,7 @@ export default function EditProfilePage() {
   
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [email, setEmail] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -24,6 +25,7 @@ export default function EditProfilePage() {
           const data = await res.json();
           setName(data.name || session?.user?.name || "");
           setBio(data.bio || "");
+          setEmail(data.email || session?.user?.email || "");
           // Use API profile_image if available, otherwise fall back to localStorage
           const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
           setProfileImage(data.profile_image || savedProfile.profileImage || null);
@@ -36,6 +38,7 @@ export default function EditProfilePage() {
       const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
       setName(savedProfile.name || session?.user?.name || "");
       setBio(savedProfile.bio || "");
+      setEmail(session?.user?.email || "");
       setProfileImage(savedProfile.profileImage || null);
     }
     loadProfile();
@@ -155,7 +158,7 @@ export default function EditProfilePage() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             type="email"
-            value={session?.user?.email || ""}
+            value={email}
             disabled
             className="input-field bg-gray-100 text-gray-500 cursor-not-allowed"
           />

@@ -219,10 +219,20 @@ body {
   body {
     background: white !important;
     color: black !important;
+    font-size: 12pt !important;
   }
 
   nav, .no-print, button, .sticky, #comments-section,
   [class*="bottom-0"][class*="fixed"] {
+    display: none !important;
+  }
+
+  /* Hide recipe hero image, author avatar, action bar, follow button */
+  [class*="aspect-4"] {
+    display: none !important;
+  }
+
+  [class*="border-y"][class*="border-primary"] {
     display: none !important;
   }
 
@@ -236,8 +246,24 @@ body {
     border: 1px solid #ddd;
   }
 
-  img {
-    max-height: 300px;
-    object-fit: cover;
+  /* Clean typography for ingredients and steps */
+  h1 {
+    font-size: 18pt !important;
+    margin-bottom: 4pt !important;
+  }
+
+  h2 {
+    font-size: 14pt !important;
+    margin-top: 12pt !important;
+  }
+
+  ul, ol {
+    padding-left: 16pt !important;
+  }
+
+  /* Remove all rounded corners and shadows for clean look */
+  * {
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
 }

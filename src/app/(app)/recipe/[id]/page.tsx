@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ManageEditorsModal from "@/components/ManageEditorsModal";
@@ -72,6 +72,7 @@ export default function RecipeDetailPage({
     can_manage_editors: number;
   } | null>(null);
   const [showManageEditors, setShowManageEditors] = useState(false);
+  const actionInFlight = useRef(false);
 
   const isOwner = session?.user?.id === recipe?.user_id;
   const canEdit = isOwner || (editorPermissions && Number(editorPermissions.can_edit) === 1);
@@ -87,13 +88,16 @@ export default function RecipeDetailPage({
         if (res.ok) {
           const data = await res.json();
           setRecipe(data.recipe);
-          setLikeCount(Number(data.recipe?.likes) || 0);
-          setIsLiked(data.hasLiked || false);
-          setMadeThis(data.hasMade || false);
-          setIsFavorited(data.isFavorited || false);
           setComments(data.comments || []);
           setAllowComments(data.allowComments !== false);
           setEditorPermissions(data.editorPermissions || null);
+          // Only update interactive state if no user action is in flight
+          if (!actionInFlight.current) {
+            setLikeCount(Number(data.recipe?.likes) || 0);
+            setIsLiked(data.hasLiked || false);
+            setMadeThis(data.hasMade || false);
+            setIsFavorited(data.isFavorited || false);
+          }
         }
       } catch (error) {
         console.error("Failed to load recipe:", error);
@@ -118,25 +122,40 @@ export default function RecipeDetailPage({
     
     loadRecipe();
     loadCollections();
-  }, [id]);
+  }, [id, sessionStatus]);
 
   const toggleLike = async () => {
     if (!recipe) return;
-    
+
+    const wasLiked = isLiked;
+    const prevCount = likeCount;
+
+    // Optimistic update
+    actionInFlight.current = true;
+    if (wasLiked) {
+      setIsLiked(false);
+      setLikeCount(Math.max(0, prevCount - 1));
+    } else {
+      setIsLiked(true);
+      setLikeCount(prevCount + 1);
+    }
+
     try {
-      if (isLiked) {
-        // Unlike
-        await fetch(`/api/recipes/${id}/like`, { method: "DELETE" });
-        setLikeCount(Math.max(0, likeCount - 1));
-        setIsLiked(false);
-      } else {
-        // Like
-        await fetch(`/api/recipes/${id}/like`, { method: "POST" });
-        setLikeCount(likeCount + 1);
-        setIsLiked(true);
+      const res = await fetch(`/api/recipes/${id}/like`, {
+        method: wasLiked ? "DELETE" : "POST",
+      });
+      if (!res.ok) {
+        // Revert on failure
+        setIsLiked(wasLiked);
+        setLikeCount(prevCount);
       }
     } catch (error) {
       console.error("Failed to toggle like:", error);
+      // Revert on error
+      setIsLiked(wasLiked);
+      setLikeCount(prevCount);
+    } finally {
+      actionInFlight.current = false;
     }
   };
 
@@ -182,15 +201,23 @@ export default function RecipeDetailPage({
 
   const toggleFavorite = async () => {
     if (!recipe) return;
-    
+
     if (isFavorited) {
       // Remove from favorites
+      const wasFavorited = true;
+      actionInFlight.current = true;
+      setIsFavorited(false);
+      setCurrentCollection(null);
       try {
-        await fetch(`/api/recipes/${id}/favorite`, { method: "DELETE" });
-        setIsFavorited(false);
-        setCurrentCollection(null);
+        const res = await fetch(`/api/recipes/${id}/favorite`, { method: "DELETE" });
+        if (!res.ok) {
+          setIsFavorited(wasFavorited);
+        }
       } catch (error) {
         console.error("Failed to remove favorite:", error);
+        setIsFavorited(wasFavorited);
+      } finally {
+        actionInFlight.current = false;
       }
     } else {
       // Show collection picker
@@ -200,36 +227,49 @@ export default function RecipeDetailPage({
 
   const saveToCollection = async (collectionName: string) => {
     if (!recipe) return;
-    
+
+    actionInFlight.current = true;
     try {
-      await fetch(`/api/recipes/${id}/favorite`, {
+      const res = await fetch(`/api/recipes/${id}/favorite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ collection: collectionName }),
       });
-      setIsFavorited(true);
-      setCurrentCollection(collectionName);
+      if (res.ok) {
+        setIsFavorited(true);
+        setCurrentCollection(collectionName);
+      }
       setShowCollectionPicker(false);
     } catch (error) {
       console.error("Failed to save to collection:", error);
+    } finally {
+      actionInFlight.current = false;
     }
   };
 
   const handleMadeThis = async () => {
     if (!recipe) return;
-    
+
+    const wasMade = madeThis;
+    actionInFlight.current = true;
+    setMadeThis(!wasMade);
+    if (!wasMade) {
+      setShowMadeToast(true);
+      setTimeout(() => setShowMadeToast(false), 2000);
+    }
+
     try {
-      if (madeThis) {
-        await fetch(`/api/recipes/${id}/made`, { method: "DELETE" });
-        setMadeThis(false);
-      } else {
-        await fetch(`/api/recipes/${id}/made`, { method: "POST" });
-        setMadeThis(true);
-        setShowMadeToast(true);
-        setTimeout(() => setShowMadeToast(false), 2000);
+      const res = await fetch(`/api/recipes/${id}/made`, {
+        method: wasMade ? "DELETE" : "POST",
+      });
+      if (!res.ok) {
+        setMadeThis(wasMade);
       }
     } catch (error) {
       console.error("Failed to toggle made:", error);
+      setMadeThis(wasMade);
+    } finally {
+      actionInFlight.current = false;
     }
   };
 
