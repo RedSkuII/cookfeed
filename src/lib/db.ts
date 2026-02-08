@@ -159,6 +159,7 @@ export const schema = `
     show_followers_list INTEGER DEFAULT 0,
     show_email INTEGER DEFAULT 0,
     searchable INTEGER DEFAULT 1,
+    color_theme TEXT DEFAULT 'default',
     last_active TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

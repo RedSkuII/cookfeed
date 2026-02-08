@@ -32,6 +32,7 @@ export async function GET() {
         show_followers_list: false,
         show_email: false,
         searchable: true,
+        color_theme: 'default',
       });
     }
 
@@ -51,6 +52,7 @@ export async function GET() {
       show_followers_list: Boolean(prefs.show_followers_list),
       show_email: Boolean(prefs.show_email),
       searchable: prefs.searchable !== undefined ? Boolean(prefs.searchable) : true,
+      color_theme: (prefs.color_theme as string) || 'default',
     });
   } catch (error) {
     console.error("Failed to get preferences:", error);
@@ -79,8 +81,8 @@ export async function POST(request: Request) {
           notify_likes, notify_comments, notify_followers,
           profile_public, show_activity, allow_comments,
           show_favorites, show_followers, show_followers_list, show_email, searchable,
-          last_active, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+          color_theme, last_active, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
         ON CONFLICT(user_id) DO UPDATE SET
           weekly_digest = excluded.weekly_digest,
           push_enabled = excluded.push_enabled,
@@ -96,6 +98,7 @@ export async function POST(request: Request) {
           show_followers_list = excluded.show_followers_list,
           show_email = excluded.show_email,
           searchable = excluded.searchable,
+          color_theme = excluded.color_theme,
           last_active = datetime('now'),
           updated_at = datetime('now')
       `,
@@ -115,6 +118,7 @@ export async function POST(request: Request) {
         preferences.show_followers_list ? 1 : 0,
         preferences.show_email ? 1 : 0,
         preferences.searchable !== undefined ? (preferences.searchable ? 1 : 0) : 1,
+        preferences.color_theme || 'default',
       ],
     });
 

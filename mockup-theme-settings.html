@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>CookFeed - Theme Settings Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ========== THEME DEFINITIONS ========== */
+  :root {
+    --primary-50: #fef7ee; --primary-100: #fdedd6; --primary-200: #fad7ad;
+    --primary-300: #f6ba79; --primary-400: #f19343; --primary-500: #ee751d;
+    --primary-600: #df5b13; --primary-700: #b94412; --primary-800: #933716;
+    --primary-900: #772f15; --primary-950: #401509;
+    --secondary-50: #f4f9f4; --secondary-100: #e6f2e6; --secondary-200: #cee5cf;
+    --secondary-300: #a6d0a8; --secondary-400: #77b37a; --secondary-500: #539657;
+    --secondary-600: #407a44; --secondary-700: #356138; --secondary-800: #2e4e30;
+    --secondary-900: #274129; --secondary-950: #112313;
+    --bg-warm: #FFF8F0;
+  }
+
+  /* Brand colors - NEVER change with themes (logo, app icon) */
+  .brand-primary { color: #ee751d; }
+  .brand-gradient { background: linear-gradient(to bottom right, #ee751d, #f6ba79, #539657); }
+
+  /* ========== PAGE STYLES ========== */
+  .page {
+    background: var(--bg-warm);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 16px 16px 100px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .header h1 { font-size: 24px; font-weight: 700; color: #111827; }
+
+  .section-label {
+    font-size: 12px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  /* ========== THEME GRID ========== */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .theme-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .theme-card:hover { transform: scale(1.02); }
+  .theme-card.active { border-color: var(--primary-500); }
+
+  .theme-preview {
+    height: 80px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+  }
+
+  /* Mini app preview inside each card */
+  .mini-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .mini-header {
+    height: 10px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    gap: 3px;
+  }
+  .mini-dot { width: 4px; height: 4px; border-radius: 50%; }
+  .mini-body {
+    flex: 1;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .mini-line {
+    height: 3px;
+    border-radius: 2px;
+    opacity: 0.6;
+  }
+  .mini-line.short { width: 60%; }
+  .mini-line.medium { width: 80%; }
+  .mini-btn {
+    height: 8px;
+    border-radius: 4px;
+    width: 50%;
+    margin-top: 2px;
+  }
+  .mini-nav {
+    height: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .mini-nav-dot { width: 4px; height: 4px; border-radius: 50%; opacity: 0.4; }
+  .mini-nav-dot.active { opacity: 1; }
+
+  .theme-info {
+    padding: 10px 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .theme-name { font-size: 13px; font-weight: 600; color: #111827; }
+
+  .check-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .theme-card.active .check-circle {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+  }
+
+  /* ========== INFO BOX ========== */
+  .info-box {
+    background: #eff6ff;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .info-box svg { flex-shrink: 0; margin-top: 2px; }
+  .info-box p { font-size: 13px; color: #1d4ed8; line-height: 1.5; }
+
+  /* ========== LOGO SECTION ========== */
+  .logo-note {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .logo-circle {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom right, #ee751d, #f6ba79, #539657);
+    flex-shrink: 0;
+  }
+  .logo-note-text { font-size: 12px; color: #6b7280; line-height: 1.4; }
+  .logo-note-text strong { color: #111827; font-weight: 600; }
+
+  /* ========== BOTTOM NAV (static for mockup) ========== */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    max-width: 430px; width: 100%;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 8px 8px;
+    display: flex; justify-content: space-around; align-items: center;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; padding: 4px 12px; }
+  .nav-item svg { width: 24px; height: 24px; color: #6b7280; }
+  .nav-item.active svg { color: var(--primary-500); }
+  .nav-label { font-size: 10px; margin-top: 4px; color: #6b7280; }
+  .nav-item.active .nav-label { color: var(--primary-500); font-weight: 500; }
+
+  /* ========== LIVE DEMO SECTION ========== */
+  .demo-section {
+    max-width: 430px;
+    margin: 40px auto 0;
+    padding: 0 16px 40px;
+    text-align: center;
+  }
+  .demo-section h2 {
+    font-size: 18px; font-weight: 700; color: #111827;
+    margin-bottom: 8px;
+  }
+  .demo-section p {
+    font-size: 13px; color: #6b7280; margin-bottom: 20px;
+  }
+  .demo-buttons {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .demo-btn {
+    padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 2px solid #e5e7eb; background: white; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .demo-btn:hover { border-color: #9ca3af; }
+  .demo-btn.active { border-color: var(--primary-500); background: var(--primary-50); color: var(--primary-700); }
+
+  .demo-preview-card {
+    background: var(--bg-warm);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+    transition: background 0.3s;
+  }
+  .demo-recipe-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .demo-recipe-img {
+    height: 120px;
+    background: linear-gradient(135deg, var(--primary-100), var(--secondary-100));
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.3s;
+  }
+  .demo-recipe-img span { font-size: 32px; }
+  .demo-recipe-body { padding: 12px; }
+  .demo-recipe-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+  .demo-recipe-author { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+  .demo-tags { display: flex; gap: 6px; margin-bottom: 8px; }
+  .demo-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+    transition: all 0.3s;
+  }
+  .demo-tag.primary { background: var(--primary-50); color: var(--primary-700); }
+  .demo-tag.secondary { background: var(--secondary-50); color: var(--secondary-700); }
+  .demo-actions { display: flex; gap: 12px; padding-top: 8px; border-top: 1px solid #f3f4f6; }
+  .demo-action-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.3s;
+  }
+  .demo-action-btn.fill { background: var(--primary-500); color: white; }
+  .demo-action-btn.outline { background: transparent; border: 2px solid var(--primary-500); color: var(--primary-500); }
+</style>
+</head>
+<body>
+
+<!-- ===================== THEME SETTINGS PAGE ===================== -->
+<div class="page" id="themePage">
+  <!-- Header -->
+  <div class="header">
+    <div class="back-btn">
+      <svg width="24" height="24" fill="none" stroke="#374151" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </div>
+    <h1>Theme</h1>
+  </div>
+
+  <p class="section-label">Choose Your Colors</p>
+
+  <!-- Theme Grid -->
+  <div class="theme-grid" id="themeGrid">
+
+    <!-- Sunrise (Default) -->
+    <div class="theme-card active" data-theme="default" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #FFF8F0;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #ee751d;"></div>
+            <div class="mini-dot" style="background: #539657;"></div>
+          </div>
+          <div class="mini-body" style="background: #FFF8F0;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #ee751d;"></div>
+            <div class="mini-btn" style="background: #ee751d;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #ee751d;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Sunrise</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ocean -->
+    <div class="theme-card" data-theme="ocean" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #F0F7FF;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #2563eb;"></div>
+            <div class="mini-dot" style="background: #0d9488;"></div>
+          </div>
+          <div class="mini-body" style="background: #F0F7FF;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #2563eb;"></div>
+            <div class="mini-btn" style="background: #2563eb;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #2563eb;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Ocean</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Berry -->
+    <div class="theme-card" data-theme="berry" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #FBF5FF;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #9333ea;"></div>
+            <div class="mini-dot" style="background: #e11d48;"></div>
+          </div>
+          <div class="mini-body" style="background: #FBF5FF;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #9333ea;"></div>
+            <div class="mini-btn" style="background: #9333ea;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #9333ea;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Berry</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forest -->
+    <div class="theme-card" data-theme="forest" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #F5FAF0;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #059669;"></div>
+            <div class="mini-dot" style="background: #d97706;"></div>
+          </div>
+          <div class="mini-body" style="background: #F5FAF0;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #059669;"></div>
+            <div class="mini-btn" style="background: #059669;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #059669;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Forest</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sunset -->
+    <div class="theme-card" data-theme="sunset" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #FFF5F2;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #e11d48;"></div>
+            <div class="mini-dot" style="background: #ca8a04;"></div>
+          </div>
+          <div class="mini-body" style="background: #FFF5F2;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #e11d48;"></div>
+            <div class="mini-btn" style="background: #e11d48;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #e11d48;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Sunset</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lavender -->
+    <div class="theme-card" data-theme="lavender" onclick="selectTheme(this)">
+      <div class="theme-preview" style="background: #F5F3FF;">
+        <div class="mini-preview">
+          <div class="mini-header" style="background: white;">
+            <div class="mini-dot" style="background: #6366f1;"></div>
+            <div class="mini-dot" style="background: #8b5cf6;"></div>
+          </div>
+          <div class="mini-body" style="background: #F5F3FF;">
+            <div class="mini-line medium" style="background: #111827;"></div>
+            <div class="mini-line short" style="background: #6366f1;"></div>
+            <div class="mini-btn" style="background: #6366f1;"></div>
+          </div>
+          <div class="mini-nav" style="background: white;">
+            <div class="mini-nav-dot active" style="background: #6366f1;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+            <div class="mini-nav-dot" style="background: #9ca3af;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="theme-info">
+        <span class="theme-name">Lavender</span>
+        <div class="check-circle">
+          <svg width="12" height="12" fill="white" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Logo Note -->
+  <div class="logo-note">
+    <div class="logo-circle"></div>
+    <div class="logo-note-text">
+      <strong>The CookFeed logo and app icon always stay the same</strong> regardless of your theme choice.
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="info-box">
+    <svg width="20" height="20" fill="none" stroke="#3b82f6" viewBox="0 0 24 24" style="flex-shrink:0;">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <p>Your theme is saved to your account and syncs across all devices.</p>
+  </div>
+
+  <!-- Bottom Nav (static) -->
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <span class="nav-label">Search</span>
+    </div>
+    <div class="nav-item">
+      <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 4px 12px rgba(0,0,0,0.15);" id="addBtn">
+        <svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      </div>
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+      <span class="nav-label">Favorites</span>
+    </div>
+    <div class="nav-item active">
+      <svg fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="0" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      <span class="nav-label">Profile</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LIVE PREVIEW DEMO ===================== -->
+<div class="demo-section">
+  <h2>Live Theme Preview</h2>
+  <p>Click a theme below to see how the app colors change:</p>
+
+  <div class="demo-buttons">
+    <button class="demo-btn active" onclick="applyDemoTheme('default')">Sunrise</button>
+    <button class="demo-btn" onclick="applyDemoTheme('ocean')">Ocean</button>
+    <button class="demo-btn" onclick="applyDemoTheme('berry')">Berry</button>
+    <button class="demo-btn" onclick="applyDemoTheme('forest')">Forest</button>
+    <button class="demo-btn" onclick="applyDemoTheme('sunset')">Sunset</button>
+    <button class="demo-btn" onclick="applyDemoTheme('lavender')">Lavender</button>
+  </div>
+
+  <div class="demo-preview-card" id="demoCard">
+    <div class="demo-recipe-card">
+      <div class="demo-recipe-img" id="demoImg">
+        <span>🍝</span>
+      </div>
+      <div class="demo-recipe-body">
+        <div class="demo-recipe-title">Homemade Pasta Carbonara</div>
+        <div class="demo-recipe-author">by Chef Maria</div>
+        <div class="demo-tags">
+          <span class="demo-tag primary" id="demoTag1">Italian</span>
+          <span class="demo-tag secondary" id="demoTag2">Quick</span>
+        </div>
+        <div class="demo-actions">
+          <button class="demo-action-btn fill" id="demoBtn1">Save</button>
+          <button class="demo-action-btn outline" id="demoBtn2">Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Theme color definitions
+const themes = {
+  default: {
+    p50:'#fef7ee', p100:'#fdedd6', p200:'#fad7ad', p300:'#f6ba79', p400:'#f19343',
+    p500:'#ee751d', p600:'#df5b13', p700:'#b94412', p800:'#933716', p900:'#772f15', p950:'#401509',
+    s50:'#f4f9f4', s100:'#e6f2e6', s200:'#cee5cf', s300:'#a6d0a8', s400:'#77b37a',
+    s500:'#539657', s600:'#407a44', s700:'#356138', s800:'#2e4e30', s900:'#274129', s950:'#112313',
+    bg:'#FFF8F0'
+  },
+  ocean: {
+    p50:'#eff6ff', p100:'#dbeafe', p200:'#bfdbfe', p300:'#93c5fd', p400:'#60a5fa',
+    p500:'#2563eb', p600:'#1d4ed8', p700:'#1e40af', p800:'#1e3a8a', p900:'#1e3a7a', p950:'#172554',
+    s50:'#f0fdfa', s100:'#ccfbf1', s200:'#99f6e4', s300:'#5eead4', s400:'#2dd4bf',
+    s500:'#0d9488', s600:'#0f766e', s700:'#115e59', s800:'#134e4a', s900:'#042f2e', s950:'#021c1b',
+    bg:'#F0F7FF'
+  },
+  berry: {
+    p50:'#faf5ff', p100:'#f3e8ff', p200:'#e9d5ff', p300:'#d8b4fe', p400:'#c084fc',
+    p500:'#9333ea', p600:'#7e22ce', p700:'#6b21a8', p800:'#581c87', p900:'#4a1772', p950:'#2e1065',
+    s50:'#fff1f2', s100:'#ffe4e6', s200:'#fecdd3', s300:'#fda4af', s400:'#fb7185',
+    s500:'#e11d48', s600:'#be123c', s700:'#9f1239', s800:'#881337', s900:'#4c0519', s950:'#2d0311',
+    bg:'#FBF5FF'
+  },
+  forest: {
+    p50:'#ecfdf5', p100:'#d1fae5', p200:'#a7f3d0', p300:'#6ee7b7', p400:'#34d399',
+    p500:'#059669', p600:'#047857', p700:'#065f46', p800:'#064e3b', p900:'#022c22', p950:'#012018',
+    s50:'#fffbeb', s100:'#fef3c7', s200:'#fde68a', s300:'#fcd34d', s400:'#fbbf24',
+    s500:'#d97706', s600:'#b45309', s700:'#92400e', s800:'#78350f', s900:'#451a03', s950:'#2d1001',
+    bg:'#F5FAF0'
+  },
+  sunset: {
+    p50:'#fff1f2', p100:'#ffe4e6', p200:'#fecdd3', p300:'#fda4af', p400:'#fb7185',
+    p500:'#e11d48', p600:'#be123c', p700:'#9f1239', p800:'#881337', p900:'#4c0519', p950:'#2d0311',
+    s50:'#fefce8', s100:'#fef9c3', s200:'#fef08a', s300:'#fde047', s400:'#facc15',
+    s500:'#ca8a04', s600:'#a16207', s700:'#854d0e', s800:'#713f12', s900:'#422006', s950:'#281304',
+    bg:'#FFF5F2'
+  },
+  lavender: {
+    p50:'#eef2ff', p100:'#e0e7ff', p200:'#c7d2fe', p300:'#a5b4fc', p400:'#818cf8',
+    p500:'#6366f1', p600:'#4f46e5', p700:'#4338ca', p800:'#3730a3', p900:'#312e81', p950:'#1e1b4b',
+    s50:'#f5f3ff', s100:'#ede9fe', s200:'#ddd6fe', s300:'#c4b5fd', s400:'#a78bfa',
+    s500:'#8b5cf6', s600:'#7c3aed', s700:'#6d28d9', s800:'#5b21b6', s900:'#4c1d95', s950:'#2e1065',
+    bg:'#F5F3FF'
+  }
+};
+
+function selectTheme(el) {
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const t = el.dataset.theme;
+  applyThemeVars(themes[t]);
+}
+
+function applyThemeVars(t) {
+  const r = document.documentElement.style;
+  r.setProperty('--primary-50', t.p50);   r.setProperty('--primary-100', t.p100);
+  r.setProperty('--primary-200', t.p200); r.setProperty('--primary-300', t.p300);
+  r.setProperty('--primary-400', t.p400); r.setProperty('--primary-500', t.p500);
+  r.setProperty('--primary-600', t.p600); r.setProperty('--primary-700', t.p700);
+  r.setProperty('--primary-800', t.p800); r.setProperty('--primary-900', t.p900);
+  r.setProperty('--primary-950', t.p950);
+  r.setProperty('--secondary-50', t.s50);   r.setProperty('--secondary-100', t.s100);
+  r.setProperty('--secondary-200', t.s200); r.setProperty('--secondary-300', t.s300);
+  r.setProperty('--secondary-400', t.s400); r.setProperty('--secondary-500', t.s500);
+  r.setProperty('--secondary-600', t.s600); r.setProperty('--secondary-700', t.s700);
+  r.setProperty('--secondary-800', t.s800); r.setProperty('--secondary-900', t.s900);
+  r.setProperty('--secondary-950', t.s950);
+  r.setProperty('--bg-warm', t.bg);
+
+  // Update dynamic elements
+  document.getElementById('addBtn').style.background = t.p500;
+  document.getElementById('themePage').style.background = t.bg;
+}
+
+function applyDemoTheme(name) {
+  const t = themes[name];
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Apply to demo card
+  document.getElementById('demoCard').style.background = t.bg;
+  document.getElementById('demoImg').style.background = `linear-gradient(135deg, ${t.p100}, ${t.s100})`;
+  document.getElementById('demoTag1').style.background = t.p50;
+  document.getElementById('demoTag1').style.color = t.p700;
+  document.getElementById('demoTag2').style.background = t.s50;
+  document.getElementById('demoTag2').style.color = t.s700;
+  document.getElementById('demoBtn1').style.background = t.p500;
+  document.getElementById('demoBtn2').style.borderColor = t.p500;
+  document.getElementById('demoBtn2').style.color = t.p500;
+
+  // Also apply to main page
+  applyThemeVars(t);
+
+  // Update selected theme card
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.theme-card[data-theme="${name}"]`).classList.add('active');
+}
+
+// Init
+document.getElementById('addBtn').style.background = '#ee751d';
+</script>
+
+</body>
+</html>

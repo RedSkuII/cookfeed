@@ -6,7 +6,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Logo Circle */}
-        <div className="w-28 h-28 rounded-full bg-linear-to-br from-primary-500 via-primary-300 to-secondary-500 mb-6 shadow-lg" />
+        <div className="w-28 h-28 rounded-full bg-linear-to-br from-brand-500 via-brand-300 to-brand-secondary-500 mb-6 shadow-lg" />
 
         {/* Title */}
         <h1 className="text-2xl font-black text-gray-900 leading-tight mb-3 text-center">
@@ -19,7 +19,7 @@ export default function Home() {
         {/* CTA Button */}
         <Link
           href="/auth/signup"
-          className="bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm px-8 py-3 rounded-full shadow-lg transition-colors mb-3"
+          className="bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm px-8 py-3 rounded-full shadow-lg transition-colors mb-3"
         >
           Get Started Free
         </Link>
@@ -28,8 +28,8 @@ export default function Home() {
         {/* Feature Cards */}
         <div className="space-y-3 max-w-sm w-full mb-8">
           <div className="bg-white rounded-2xl p-4 shadow-sm flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                 <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
               </svg>
@@ -51,8 +51,8 @@ export default function Home() {
             </div>
           </div>
           <div className="bg-white rounded-2xl p-4 shadow-sm flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
               </svg>
             </div>
@@ -66,12 +66,12 @@ export default function Home() {
         {/* Log In Link */}
         <p className="text-sm text-gray-500">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-primary-500 font-semibold">Log In</Link>
+          <Link href="/auth/login" className="text-brand-500 font-semibold">Log In</Link>
         </p>
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-primary-200 py-4 text-center">
+      <footer className="border-t border-brand-200 py-4 text-center">
         <p className="text-xs text-gray-400">Made with warmth by the CookFeed team</p>
         <div className="flex justify-center gap-4 mt-2">
           <span className="text-xs text-gray-500">About</span>

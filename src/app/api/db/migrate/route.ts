@@ -37,6 +37,8 @@ export async function GET() {
       `ALTER TABLE user_preferences ADD COLUMN searchable INTEGER DEFAULT 1`,
       // Add show_followers_list column to user_preferences (default OFF)
       `ALTER TABLE user_preferences ADD COLUMN show_followers_list INTEGER DEFAULT 0`,
+      // Add color_theme column to user_preferences
+      `ALTER TABLE user_preferences ADD COLUMN color_theme TEXT DEFAULT 'default'`,
     ];
 
     const results: { migration: string; status: string }[] = [];
