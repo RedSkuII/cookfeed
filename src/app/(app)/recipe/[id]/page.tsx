@@ -636,7 +636,7 @@ export default function RecipeDetailPage({
             <ul className="space-y-3">
               {parseList(recipe.ingredients).map((ingredient, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <span className="text-gray-400 shrink-0">-</span>
+                  <span className="text-primary-500 font-bold shrink-0">-</span>
                   <span className="text-gray-700">{ingredient}</span>
                 </li>
               ))}
