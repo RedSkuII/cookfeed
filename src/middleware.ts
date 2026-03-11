@@ -18,6 +18,11 @@ function isProtectedRoute(pathname: string): boolean {
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
+  // Redirect logged-in users from landing page to feed
+  if (pathname === "/" && req.auth) {
+    return NextResponse.redirect(new URL("/feed", req.nextUrl.origin));
+  }
+
   if (isProtectedRoute(pathname) && !req.auth) {
     const loginUrl = new URL("/auth/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
