@@ -526,7 +526,7 @@ export default function RecipeDetailPage({
         {/* Title & Author */}
         <h1 className="text-xl font-black text-gray-900 mb-1">{recipe.title}</h1>
         
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4 print-hide">
           <div className="w-9 h-9 bg-linear-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden">
             {recipe.author_image ? (
               <img src={recipe.author_image} alt={recipe.author} className="w-full h-full object-cover" />

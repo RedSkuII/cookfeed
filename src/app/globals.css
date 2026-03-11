@@ -245,13 +245,23 @@ body {
     display: none !important;
   }
 
-  /* Hide recipe hero image, author avatar, action bar, follow button */
+  /* Hide recipe hero image, action bar */
   [class*="aspect-4"] {
     display: none !important;
   }
 
   [class*="border-y"][class*="border-primary"] {
     display: none !important;
+  }
+
+  /* Kill min-height that forces blank space */
+  .min-h-screen, [class*="min-h-screen"] {
+    min-height: 0 !important;
+  }
+
+  /* Strip all padding on outer wrappers */
+  .pb-20, [class*="pb-20"] {
+    padding-bottom: 0 !important;
   }
 
   main {
@@ -264,13 +274,13 @@ body {
     border: none !important;
   }
 
-  /* Title: centered + thinner weight */
+  /* Title: centered + bold but thinner than black */
   h1 {
     font-size: 17pt !important;
-    font-weight: 300 !important;
+    font-weight: 600 !important;
     text-align: center !important;
-    margin-bottom: 6pt !important;
-    letter-spacing: 0.3pt !important;
+    margin-bottom: 4pt !important;
+    letter-spacing: 0.2pt !important;
   }
 
   /* Section headings (Ingredients, Steps) */
@@ -315,15 +325,13 @@ body {
 
   /* Description */
   p[class*="text-gray-700"] {
-    text-align: center !important;
     font-size: 9pt !important;
     margin-bottom: 4pt !important;
   }
 
-  /* Tags */
-  [class*="flex-wrap"][class*="gap-2"] span {
-    font-size: 8pt !important;
-    padding: 1pt 4pt !important;
+  /* Tags - hide in print */
+  [class*="flex-wrap"][class*="gap-2"] {
+    display: none !important;
   }
 
   /* Ingredient/step decorative circles - smaller in print */
