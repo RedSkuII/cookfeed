@@ -13,7 +13,7 @@ export async function GET(
     const session = await auth();
 
     const result = await db.execute({
-      sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+      sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
             (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as like_count,
             (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count,
             p.allow_comments
@@ -31,6 +31,7 @@ export async function GET(
     const row = result.rows[0];
     const recipe = {
       ...row,
+      author: row.author_name || row.author || null,
       tags: JSON.parse((row.tags as string) || "[]"),
     };
 

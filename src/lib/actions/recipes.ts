@@ -28,7 +28,7 @@ export interface Recipe {
 export async function getPublicRecipes() {
   const db = getDb();
   const result = await db.execute({
-    sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+    sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
           (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
           (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comments
           FROM recipes r
@@ -40,6 +40,7 @@ export async function getPublicRecipes() {
   
   return result.rows.map(row => ({
     ...row,
+    author: row.author_name || row.author || null,
     tags: JSON.parse(row.tags as string || '[]'),
   }));
 }
@@ -48,7 +49,7 @@ export async function getPublicRecipes() {
 export async function getRecipeById(id: string) {
   const db = getDb();
   const result = await db.execute({
-    sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+    sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
           (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes,
           (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count
           FROM recipes r
@@ -62,6 +63,7 @@ export async function getRecipeById(id: string) {
   const row = result.rows[0];
   return {
     ...row,
+    author: row.author_name || row.author || null,
     tags: JSON.parse(row.tags as string || '[]'),
   };
 }
@@ -250,7 +252,7 @@ export async function searchRecipes(query: string) {
   const searchTerm = `%${query}%`;
   
   const result = await db.execute({
-    sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+    sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
           (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes
           FROM recipes r
           LEFT JOIN users u ON r.user_id = u.id

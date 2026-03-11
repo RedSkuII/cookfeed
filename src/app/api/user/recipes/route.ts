@@ -30,7 +30,7 @@ export async function GET() {
 
     // Get "made" recipes
     const madeResult = await db.execute({
-      sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+      sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
             (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes
             FROM made_recipes m
             JOIN recipes r ON m.recipe_id = r.id
@@ -42,6 +42,7 @@ export async function GET() {
 
     const madeRecipes = madeResult.rows.map((row) => ({
       ...row,
+      author: row.author_name || row.author || null,
       tags: JSON.parse((row.tags as string) || "[]"),
     }));
 

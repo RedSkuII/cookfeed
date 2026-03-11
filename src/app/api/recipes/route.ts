@@ -9,7 +9,7 @@ export async function GET() {
     const session = await auth();
 
     const result = await db.execute({
-      sql: `SELECT r.*, u.name as author, u.profile_image as author_image,
+      sql: `SELECT r.*, u.name as author_name, u.profile_image as author_image,
             (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as like_count,
             (SELECT COUNT(*) FROM comments WHERE recipe_id = r.id) as comment_count
             FROM recipes r
@@ -31,6 +31,7 @@ export async function GET() {
 
     const recipes = result.rows.map((row) => ({
       ...row,
+      author: row.author_name || row.author || null,
       tags: JSON.parse((row.tags as string) || "[]"),
       like_count: Number(row.like_count) || 0,
       comment_count: Number(row.comment_count) || 0,

@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const db = getDb();
     const result = await db.execute({
-      sql: `SELECT r.*, f.collection, u.name as author, u.profile_image as author_image,
+      sql: `SELECT r.*, f.collection, u.name as author_name, u.profile_image as author_image,
             (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes
             FROM favorites f
             JOIN recipes r ON f.recipe_id = r.id
@@ -24,6 +24,7 @@ export async function GET() {
 
     const favorites = result.rows.map((row) => ({
       ...row,
+      author: row.author_name || row.author || null,
       tags: JSON.parse((row.tags as string) || "[]"),
     }));
 

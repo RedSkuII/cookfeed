@@ -17,7 +17,7 @@ export async function getFavorites() {
   const db = getDb();
   
   const result = await db.execute({
-    sql: `SELECT r.*, f.collection, u.name as author, u.profile_image as author_image,
+    sql: `SELECT r.*, f.collection, u.name as author_name, u.profile_image as author_image,
           (SELECT COUNT(*) FROM likes WHERE recipe_id = r.id) as likes
           FROM favorites f
           JOIN recipes r ON f.recipe_id = r.id
