@@ -527,15 +527,15 @@ export default function RecipeDetailPage({
         <h1 className="text-xl font-black text-gray-900 mb-1">{recipe.title}</h1>
         
         <div className="flex items-center gap-2 mb-4 print-hide">
-          <div className="w-9 h-9 bg-linear-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden">
+          <Link href={`/profile/${recipe.user_id}`} className="w-9 h-9 bg-linear-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center overflow-hidden">
             {recipe.author_image ? (
               <img src={recipe.author_image} alt={recipe.author} className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-semibold">{recipe.author?.charAt(0) || "?"}</span>
             )}
-          </div>
+          </Link>
           <div className="flex-1">
-            <p className="text-sm font-bold text-gray-900">{recipe.author}</p>
+            <Link href={`/profile/${recipe.user_id}`} className="text-sm font-bold text-gray-900 hover:text-primary-500 transition-colors">{recipe.author}</Link>
             <p className="text-xs text-gray-400 print-hide">{new Date(recipe.created_at).toLocaleDateString()}</p>
           </div>
           {!isOwner && session?.user?.id && (
@@ -635,10 +635,8 @@ export default function RecipeDetailPage({
             <h2 className="text-base font-extrabold text-gray-900 mb-3">Ingredients</h2>
             <ul className="space-y-3">
               {parseList(recipe.ingredients).map((ingredient, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-                  </div>
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-gray-400 shrink-0">-</span>
                   <span className="text-gray-700">{ingredient}</span>
                 </li>
               ))}

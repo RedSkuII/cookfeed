@@ -283,9 +283,10 @@ body {
     letter-spacing: 0.2pt !important;
   }
 
-  /* Section headings (Ingredients, Steps) */
+  /* Section headings (Ingredients, Steps) — match title font */
   h2 {
     font-size: 12pt !important;
+    font-weight: 600 !important;
     margin-top: 8pt !important;
     margin-bottom: 2pt !important;
   }
