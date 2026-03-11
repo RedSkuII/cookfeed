@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   keywords: ["recipes", "cooking", "cookbook", "food", "meal planning"],
   authors: [{ name: "CookFeed" }],
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -23,6 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

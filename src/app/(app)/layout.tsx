@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IOSInstallPrompt } from "@/components/ios-install-prompt";
 
 export default function AppLayout({
   children,
@@ -64,6 +65,9 @@ export default function AppLayout({
   return (
     <div className="min-h-screen pb-20">
       {children}
+
+      {/* iOS "Add to Home Screen" prompt */}
+      <IOSInstallPrompt />
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 safe-area-bottom">

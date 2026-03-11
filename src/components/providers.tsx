@@ -42,6 +42,10 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     updateMetaThemeColor(THEME_COLORS.default);
+    // Register service worker for PWA/offline support
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
