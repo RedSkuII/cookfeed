@@ -596,31 +596,7 @@ export default function RecipeDetailPage({
             )}
           </button>
           <button
-            onClick={() => {
-              // Auto-scale long recipes to fit one printed page
-              const PAGE_HEIGHT = 9.2 * 96; // ~9.2in printable area in px (letter minus 0.4in top/bottom margins)
-              // Estimate printable content height (exclude hidden-in-print sections)
-              const content = document.querySelector('main');
-              const comments = document.getElementById('comments-section');
-              if (content) {
-                const commentsH = comments ? comments.scrollHeight : 0;
-                const buttonsH = 180; // rough estimate of hidden buttons/action-bar/image
-                const printH = content.scrollHeight - commentsH - buttonsH;
-                if (printH > PAGE_HEIGHT) {
-                  const scale = Math.max(PAGE_HEIGHT / printH, 0.5); // never shrink below 50%
-                  const style = document.createElement('style');
-                  style.id = 'print-scale';
-                  style.textContent = `@media print { main { transform: scale(${scale.toFixed(3)}); transform-origin: top left; width: ${(100 / scale).toFixed(1)}%; } }`;
-                  document.head.appendChild(style);
-                  window.print();
-                  style.remove();
-                } else {
-                  window.print();
-                }
-              } else {
-                window.print();
-              }
-            }}
+            onClick={() => window.print()}
             className="flex items-center gap-2 text-gray-700 hover:text-primary-500 transition-colors no-print"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
