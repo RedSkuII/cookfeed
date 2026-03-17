@@ -68,12 +68,11 @@ export default function PrivacySettingsPage() {
         body: JSON.stringify(newSettings),
       });
       if (!res.ok) {
-        // API failed — revert toggle
+        console.error("Privacy save failed:", res.status, await res.text());
         setSettings(prevSettings);
       }
     } catch (error) {
       console.error("Failed to save settings:", error);
-      // Revert on error
       setSettings(prevSettings);
     } finally {
       setSaving(false);
