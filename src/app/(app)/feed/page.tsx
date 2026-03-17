@@ -26,9 +26,11 @@ export default function FeedPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedTag, setSelectedTag] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [collections, setCollections] = useState<string[]>(["Favorites"]);
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [pickerRecipeId, setPickerRecipeId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load recipes from database API
     async function loadRecipes() {
       try {
         const res = await fetch("/api/recipes");
@@ -42,7 +44,18 @@ export default function FeedPage() {
         setLoading(false);
       }
     }
+    async function loadCollections() {
+      try {
+        const res = await fetch("/api/collections");
+        if (res.ok) {
+          const data = await res.json();
+          const names = (data.collections || []).map((c: { name: string }) => c.name);
+          setCollections(["Favorites", ...names.filter((n: string) => n !== "Favorites")]);
+        }
+      } catch {}
+    }
     loadRecipes();
+    loadCollections();
   }, []);
 
   // Filter recipes by tag
@@ -183,19 +196,23 @@ export default function FeedPage() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      const wasFavorited = recipe.isFavorited;
-                      setRecipes(prev => prev.map(r =>
-                        r.id === recipe.id ? { ...r, isFavorited: !wasFavorited } : r
-                      ));
-                      fetch(`/api/recipes/${recipe.id}/favorite`, {
-                        method: wasFavorited ? "DELETE" : "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: wasFavorited ? undefined : JSON.stringify({ collection: "Favorites" }),
-                      }).catch(() => {
+                      if (recipe.isFavorited) {
+                        // Remove from favorites
                         setRecipes(prev => prev.map(r =>
-                          r.id === recipe.id ? { ...r, isFavorited: wasFavorited } : r
+                          r.id === recipe.id ? { ...r, isFavorited: false } : r
                         ));
-                      });
+                        fetch(`/api/recipes/${recipe.id}/favorite`, {
+                          method: "DELETE",
+                        }).catch(() => {
+                          setRecipes(prev => prev.map(r =>
+                            r.id === recipe.id ? { ...r, isFavorited: true } : r
+                          ));
+                        });
+                      } else {
+                        // Show collection picker
+                        setPickerRecipeId(recipe.id);
+                        setShowCollectionPicker(true);
+                      }
                     }}
                     role="button"
                     tabIndex={0}
@@ -209,6 +226,53 @@ export default function FeedPage() {
             </Link>
           ))}
         </div>
+      )}
+
+      {/* Collection Picker Modal */}
+      {showCollectionPicker && pickerRecipeId && (
+        <>
+          <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setShowCollectionPicker(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 safe-area-bottom max-h-[70vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Save to Collection</h3>
+            <div className="space-y-2">
+              {collections.map((collection) => (
+                <button
+                  key={collection}
+                  onClick={() => {
+                    const recipeId = pickerRecipeId;
+                    setRecipes(prev => prev.map(r =>
+                      r.id === recipeId ? { ...r, isFavorited: true } : r
+                    ));
+                    setShowCollectionPicker(false);
+                    setPickerRecipeId(null);
+                    fetch(`/api/recipes/${recipeId}/favorite`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ collection }),
+                    }).catch(() => {
+                      setRecipes(prev => prev.map(r =>
+                        r.id === recipeId ? { ...r, isFavorited: false } : r
+                      ));
+                    });
+                  }}
+                  className="w-full p-4 rounded-xl text-left flex items-center gap-3 transition-colors bg-gray-50 hover:bg-gray-100"
+                >
+                  <span className="text-xl">📁</span>
+                  <span className="font-medium text-gray-900">{collection}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                setShowCollectionPicker(false);
+                setPickerRecipeId(null);
+              }}
+              className="w-full mt-4 py-3 border border-gray-300 rounded-xl font-medium text-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
       )}
     </main>
   );
