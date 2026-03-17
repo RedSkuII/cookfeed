@@ -21,12 +21,26 @@ export async function GET() {
 
     // Get liked recipe IDs for current user
     let likedIds = new Set<string>();
+    let favoritedIds = new Set<string>();
+    let madeIds = new Set<string>();
     if (session?.user?.id) {
       const likedResult = await db.execute({
         sql: `SELECT recipe_id FROM likes WHERE user_id = ?`,
         args: [session.user.id],
       });
       likedIds = new Set(likedResult.rows.map(r => r.recipe_id as string));
+
+      const favResult = await db.execute({
+        sql: `SELECT recipe_id FROM favorites WHERE user_id = ?`,
+        args: [session.user.id],
+      });
+      favoritedIds = new Set(favResult.rows.map(r => r.recipe_id as string));
+
+      const madeResult = await db.execute({
+        sql: `SELECT recipe_id FROM made_recipes WHERE user_id = ?`,
+        args: [session.user.id],
+      });
+      madeIds = new Set(madeResult.rows.map(r => r.recipe_id as string));
     }
 
     const recipes = result.rows.map((row) => ({
@@ -36,6 +50,8 @@ export async function GET() {
       like_count: Number(row.like_count) || 0,
       comment_count: Number(row.comment_count) || 0,
       hasLiked: likedIds.has(row.id as string),
+      isFavorited: favoritedIds.has(row.id as string),
+      hasMade: madeIds.has(row.id as string),
     }));
 
     return NextResponse.json({ recipes });

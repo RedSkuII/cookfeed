@@ -13,6 +13,8 @@ type Recipe = {
   like_count: number;
   comment_count: number;
   hasLiked: boolean;
+  isFavorited: boolean;
+  hasMade: boolean;
   tags: string[];
   visibility: string;
   created_at: string;
@@ -167,8 +169,38 @@ export default function FeedPage() {
                     </svg>
                     <span className="text-xs font-semibold text-gray-600">{recipe.comment_count || 0}</span>
                   </div>
-                  <div className="flex items-center gap-1 ml-auto">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  {/* Made This checkmark */}
+                  {recipe.hasMade && (
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                    </div>
+                  )}
+                  {/* Bookmark */}
+                  <div
+                    className="flex items-center gap-1 ml-auto"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const wasFavorited = recipe.isFavorited;
+                      setRecipes(prev => prev.map(r =>
+                        r.id === recipe.id ? { ...r, isFavorited: !wasFavorited } : r
+                      ));
+                      fetch(`/api/recipes/${recipe.id}/favorite`, {
+                        method: wasFavorited ? "DELETE" : "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: wasFavorited ? undefined : JSON.stringify({ collection: "Favorites" }),
+                      }).catch(() => {
+                        setRecipes(prev => prev.map(r =>
+                          r.id === recipe.id ? { ...r, isFavorited: wasFavorited } : r
+                        ));
+                      });
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <svg className={`w-4 h-4 ${recipe.isFavorited ? "text-primary-500" : "text-gray-400"}`} fill={recipe.isFavorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
                   </div>
