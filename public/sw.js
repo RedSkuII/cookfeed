@@ -1,4 +1,4 @@
-const CACHE_NAME = "cookfeed-v1";
+const CACHE_NAME = "recifeed-v1";
 const PRECACHE_URLS = [
   "/feed",
   "/icons/icon-192.png",

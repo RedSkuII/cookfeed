@@ -27,7 +27,7 @@ export default function EditProfilePage() {
           setBio(data.bio || "");
           setEmail(data.email || session?.user?.email || "");
           // Use API profile_image if available, otherwise fall back to localStorage
-          const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
+          const savedProfile = JSON.parse(localStorage.getItem("recifeed_profile") || "{}");
           setProfileImage(data.profile_image || savedProfile.profileImage || null);
           return;
         }
@@ -35,7 +35,7 @@ export default function EditProfilePage() {
         console.error("Failed to load profile from API:", error);
       }
       // Fallback to localStorage
-      const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
+      const savedProfile = JSON.parse(localStorage.getItem("recifeed_profile") || "{}");
       setName(savedProfile.name || session?.user?.name || "");
       setBio(savedProfile.bio || "");
       setEmail(session?.user?.email || "");
@@ -87,7 +87,7 @@ export default function EditProfilePage() {
       image: session?.user?.image,
       profileImage: profileImage,
     };
-    localStorage.setItem("cookfeed_profile", JSON.stringify(profile));
+    localStorage.setItem("recifeed_profile", JSON.stringify(profile));
 
     setIsSaving(false);
     router.push("/profile");

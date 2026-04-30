@@ -7,10 +7,10 @@ const inter = Inter({ subsets: ["latin"] });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "CookFeed - Your Personal Recipe Book & Feed",
-  description: "Save, organize, and share your favorite recipes with CookFeed. Your personal digital cookbook with a social twist.",
+  title: "ReciFeed - Your Personal Recipe Book & Feed",
+  description: "Save, organize, and share your favorite recipes with ReciFeed. Your personal digital cookbook with a social twist.",
   keywords: ["recipes", "cooking", "cookbook", "food", "meal planning"],
-  authors: [{ name: "CookFeed" }],
+  authors: [{ name: "ReciFeed" }],
   manifest: "/manifest.json",
   icons: {
     apple: "/icons/apple-touch-icon.png",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CookFeed",
+    title: "ReciFeed",
   },
 };
 

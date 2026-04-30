@@ -21,7 +21,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">1. Acceptance of Terms</h2>
           <p className="text-gray-700">
-            By accessing and using CookFeed, you agree to be bound by these Terms of Service. 
+            By accessing and using ReciFeed, you agree to be bound by these Terms of Service.
             If you do not agree to these terms, please do not use our service.
           </p>
         </section>
@@ -29,7 +29,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">2. Use of Service</h2>
           <p className="text-gray-700">
-            CookFeed is a personal recipe management application. You may use the service to:
+            ReciFeed is a personal recipe management application. You may use the service to:
           </p>
           <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1">
             <li>Store and organize your personal recipes</li>
@@ -43,7 +43,7 @@ export default function TermsPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-3">3. User Content</h2>
           <p className="text-gray-700">
             You retain ownership of all recipes and content you create. By posting content publicly, 
-            you grant CookFeed a license to display that content to other users.
+            you grant ReciFeed a license to display that content to other users.
           </p>
         </section>
 
@@ -70,7 +70,7 @@ export default function TermsPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">6. Contact</h2>
           <p className="text-gray-700">
-            If you have questions about these terms, please contact us at support@cookfeed.app
+            If you have questions about these terms, please contact us at support@recifeed.app
           </p>
         </section>
       </div>

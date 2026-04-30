@@ -59,7 +59,7 @@ export default function ProfilePage() {
       }
     }
 
-    const savedProfile = JSON.parse(localStorage.getItem("cookfeed_profile") || "{}");
+    const savedProfile = JSON.parse(localStorage.getItem("recifeed_profile") || "{}");
     setProfile(savedProfile);
 
     async function loadFollowers() {
@@ -153,7 +153,7 @@ export default function ProfilePage() {
     const url = window.location.origin + `/profile/${session?.user?.id}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${profile.name || session?.user?.name}'s CookFeed`, url });
+        await navigator.share({ title: `${profile.name || session?.user?.name}'s ReciFeed`, url });
       } else {
         await navigator.clipboard.writeText(url);
       }

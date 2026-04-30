@@ -158,7 +158,7 @@ export default function ThemeSettingsPage() {
       <div className="bg-white rounded-xl p-4 flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#ee751d] via-[#f6ba79] to-[#539657] shrink-0" />
         <p className="text-xs text-gray-500 leading-relaxed">
-          <span className="font-semibold text-gray-900">The CookFeed logo and app icon always stay the same</span> regardless of your theme choice.
+          <span className="font-semibold text-gray-900">The ReciFeed logo and app icon always stay the same</span> regardless of your theme choice.
         </p>
       </div>
 

@@ -14,13 +14,13 @@ export default function SettingsPage() {
 
   const handleClearData = () => {
     if (confirm("Are you sure you want to clear all your data? This cannot be undone.")) {
-      localStorage.removeItem("cookfeed_recipes");
-      localStorage.removeItem("cookfeed_favorites");
-      localStorage.removeItem("cookfeed_profile");
-      localStorage.removeItem("cookfeed_liked");
-      localStorage.removeItem("cookfeed_made");
-      localStorage.removeItem("cookfeed_comments");
-      localStorage.removeItem("cookfeed_collections");
+      localStorage.removeItem("recifeed_recipes");
+      localStorage.removeItem("recifeed_favorites");
+      localStorage.removeItem("recifeed_profile");
+      localStorage.removeItem("recifeed_liked");
+      localStorage.removeItem("recifeed_made");
+      localStorage.removeItem("recifeed_comments");
+      localStorage.removeItem("recifeed_collections");
       alert("All data cleared!");
       router.push("/feed");
     }
@@ -174,7 +174,7 @@ export default function SettingsPage() {
 
         {/* App Version */}
         <p className="text-center text-sm text-gray-400">
-          CookFeed v1.0.0
+          ReciFeed v1.0.0
         </p>
       </div>
     </main>

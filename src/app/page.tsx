@@ -72,7 +72,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-brand-200 py-4 text-center">
-        <p className="text-xs text-gray-400">Made with warmth by the CookFeed team</p>
+        <p className="text-xs text-gray-400">Made with warmth by the ReciFeed team</p>
         <div className="flex justify-center gap-4 mt-2">
           <span className="text-xs text-gray-500">About</span>
           <span className="text-xs text-gray-500">Privacy</span>

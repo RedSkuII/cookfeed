@@ -1,6 +1,6 @@
 {
-  "name": "CookFeed",
-  "short_name": "CookFeed",
+  "name": "ReciFeed",
+  "short_name": "ReciFeed",
   "description": "Your personal recipe book & feed",
   "start_url": "/feed",
   "display": "standalone",

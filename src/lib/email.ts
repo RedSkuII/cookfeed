@@ -5,9 +5,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // From email - you'll need to verify a domain in Resend for production
 // For now, use their default onboarding email
-const FROM_EMAIL = process.env.FROM_EMAIL || "CookFeed <onboarding@resend.dev>";
+const FROM_EMAIL = process.env.FROM_EMAIL || "ReciFeed <onboarding@resend.dev>";
 
-const BASE_URL = "https://cookfeed.vercel.app";
+const BASE_URL = "https://recifeed.vercel.app";
 
 interface Recipe {
   id: string;
@@ -50,7 +50,7 @@ export async function sendWeeklyDigest(
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 32px; text-align: center;">
-            <h1 style="margin: 0; color: white; font-size: 28px;">🍳 CookFeed</h1>
+            <h1 style="margin: 0; color: white; font-size: 28px;">🍳 ReciFeed</h1>
             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 16px;">Your Weekly Recipe Digest</p>
           </div>
           
@@ -75,7 +75,7 @@ export async function sendWeeklyDigest(
           <!-- Footer -->
           <div style="background: #f9f9f9; padding: 24px; text-align: center; border-top: 1px solid #eee;">
             <p style="margin: 0 0 8px; color: #888; font-size: 12px;">
-              You're receiving this because you subscribed to CookFeed's weekly digest.
+              You're receiving this because you subscribed to ReciFeed's weekly digest.
             </p>
             <p style="margin: 0; color: #888; font-size: 12px;">
               <a href="${BASE_URL}/settings/notifications" style="color: #f97316;">Unsubscribe</a> from these emails.
@@ -90,7 +90,7 @@ export async function sendWeeklyDigest(
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: userEmail,
-      subject: `🍳 Your Weekly Recipe Digest from CookFeed`,
+      subject: `🍳 Your Weekly Recipe Digest from ReciFeed`,
       html,
     });
 

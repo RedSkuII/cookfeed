@@ -1,14 +1,16 @@
 {
-  "name": "cookfeed",
+  "name": "recifeed",
   "version": "1.0.0",
   "description": "Your personal recipe book & feed",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "db:init": "npx tsx scripts/init-db.ts"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "db:init": "npx tsx scripts/init-db.ts",
+  "db:export": "npx tsx scripts/export-recipes.ts",
+  "db:export-local": "npx tsx scripts/export-from-snapshot.ts"
   },
   "keywords": [
     "recipes",

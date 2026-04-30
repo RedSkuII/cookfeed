@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">1. Information We Collect</h2>
           <p className="text-gray-700 mb-3">
-            When you use CookFeed, we may collect the following information:
+            When you use ReciFeed, we may collect the following information:
           </p>
           <ul className="list-disc list-inside text-gray-700 space-y-1">
             <li><strong>Account Information:</strong> Email address, name, and profile photo (when using Google Sign-In)</li>
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-3">2. How We Use Your Information</h2>
           <p className="text-gray-700 mb-3">We use your information to:</p>
           <ul className="list-disc list-inside text-gray-700 space-y-1">
-            <li>Provide and improve the CookFeed service</li>
+            <li>Provide and improve the ReciFeed service</li>
             <li>Store and sync your recipes across devices</li>
             <li>Enable social features like sharing and following</li>
             <li>Send important service updates</li>
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
         <section className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-3">7. Contact Us</h2>
           <p className="text-gray-700">
-            If you have questions about this Privacy Policy, please contact us at privacy@cookfeed.app
+            If you have questions about this Privacy Policy, please contact us at privacy@recifeed.app
           </p>
         </section>
 
