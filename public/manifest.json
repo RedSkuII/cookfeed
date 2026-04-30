@@ -4,10 +4,13 @@
   "description": "Save, organize, and share your favorite recipes. Your personal digital cookbook with a social twist.",
   "id": "/feed",
   "start_url": "/feed",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ee751d",
   "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
   "categories": ["food", "lifestyle"],
   "icons": [
     {
