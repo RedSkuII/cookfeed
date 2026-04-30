@@ -1,12 +1,14 @@
 {
   "name": "ReciFeed",
   "short_name": "ReciFeed",
-  "description": "Your personal recipe book & feed",
+  "description": "Save, organize, and share your favorite recipes. Your personal digital cookbook with a social twist.",
+  "id": "/feed",
   "start_url": "/feed",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ee751d",
   "orientation": "portrait",
+  "categories": ["food", "lifestyle"],
   "icons": [
     {
       "src": "/icons/icon-192.png",
